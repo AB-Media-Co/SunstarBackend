@@ -1,4 +1,4 @@
-import{b as z,c as d,j as e,r}from"./index-Bli-Bc4h.js";import{u as S}from"./useTextRevealAnimation-B68zgdbK.js";import{u as b}from"./useScrollAnimations-BAnvbvcf.js";import{A as B}from"./AllHotelCard-vVFJXPZC.js";import{h as D}from"./AboutSectionData-2_FMfJdS.js";import{C as f}from"./CommonSlider-BRWMIkSW.js";import{P as n}from"./index-DBhEARJJ.js";import{I as L}from"./ImageGallery-BuLua5_r.js";import"./Icons-6KUuzrGT.js";import"./pagination-Cuw1rrrP.js";/**
+import{b as z,c as d,j as e,r}from"./index-CYfY3fHk.js";import{u as S}from"./useTextRevealAnimation-euajHGX-.js";import{u as b}from"./useScrollAnimations-CvIsR0nB.js";import{A as B}from"./AllHotelCard-D6aAfoZI.js";import{h as D}from"./AboutSectionData-2_FMfJdS.js";import{C as f}from"./CommonSlider-C9jELZ2b.js";import{P as n}from"./index-CDcxDU5m.js";import{I as L}from"./ImageGallery-CwlcGV2h.js";import"./Icons-DEgkIFGT.js";import"./pagination-_VrFBDbR.js";/**
  * @license lucide-react v0.468.0 - ISC
  *
  * This source code is licensed under the ISC license.

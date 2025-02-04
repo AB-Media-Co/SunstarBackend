@@ -14,7 +14,6 @@ const hotels = [
   { name: 'The Suncourt Hotel Yatri', id: '14496', authId: '43431464258699abee-c6ea-11ec-9' },
 ];
 
-// Endpoint to handle dynamic hotel API requests
 app.post('/api/:hotelName', async (req, res) => {
   const { hotelName } = req.params;
   const hotel = hotels.find(h => h.name === hotelName);

@@ -37,7 +37,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/images', hotelRoutes);
 app.use('/api/ezeehotels', ezeeHotelRoutes);
-app.use('/api/instagram', instagramRoutes); // Use the Instagram routes
+app.use('/api/instagram', instagramRoutes);
 
 
 const __filename = fileURLToPath(import.meta.url);

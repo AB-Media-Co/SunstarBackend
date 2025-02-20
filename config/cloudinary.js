@@ -48,7 +48,6 @@ export const uploadImages = asyncHandler(async (req, res) => {
                 console.error('Cloudinary upload error:', error);
                 reject(error.message);
               } else {
-                console.log('Cloudinary upload result:', result);
                 resolve(result.secure_url);
               }
             }

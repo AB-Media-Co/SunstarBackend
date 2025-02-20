@@ -1,29 +1,16 @@
+// models/Hotel.js
 import mongoose from 'mongoose';
 
-// Room schema
-const roomSchema = new mongoose.Schema({
-  roomType: { 
-    type: String, 
-    required: true, 
-    enum: ['single', 'double', 'suite', 'deluxe'] 
-  },
-  hotel_code: { type: String, required: true }, // Changed to match the controller
-  roomNumber: { type: String, required: true },
-  description: { type: String, required: true },
-  roomLeft: { type: Number, required: true },
-  amenities: { type: [String], default: [] },
-  images: { type: [String], default: [] },
-  available: { type: Boolean, default: true },
-  hotel: { type: mongoose.Schema.Types.ObjectId, ref: 'Hotel' },
-  price: { type: Number, required: true, min: [0, 'Price must be a positive number'] },
-  discountedPrice: { type: Number, min: [0, 'Discounted price must be a positive number'] },
-  soldOut: { type: Boolean, default: false },
-}, { timestamps: true });
-
-// Hotel schema
-const hotelSchema = new mongoose.Schema({
+const HotelSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
+  aboutUs: {
+    // heading: { type: String }, 
+    description: { type: String }, 
+    img: { type: String }        
+  },
+  checkOut: { type: String },
+  checkIn: { type: String },
   location: { type: String, required: true },
   amenities: { type: [String], default: [], required: true },
   rating: { type: Number, min: 0, max: 5 },
@@ -31,18 +18,18 @@ const hotelSchema = new mongoose.Schema({
   price: { type: Number, required: true, min: [0, 'Price must be a positive number'] },
   discountedPrice: { type: Number, min: [0, 'Discounted price must be a positive number'] },
   soldOut: { type: Boolean, default: false },
-  testimonials: { 
-    type: [{
-      name: { type: String, required: true },
-      description: { type: String, required: true },
-      rating: { type: Number, required: true, min: 0, max: 5 },
-    }], 
-    default: [] 
+  testimonials: {
+    type: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, required: true },
+        rating: { type: Number, required: true, min: 0, max: 5 },
+      }
+    ],
+    default: []
   },
-  rooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }]
-}, { timestamps: true });
+  hotelCode: { type: Number, required: true },
+  authKey: { type: String, required: true },
+});
 
-const Hotel = mongoose.model('Hotel', hotelSchema);
-const Room = mongoose.model('Room', roomSchema);
-
-export { Hotel, Room };
+export default mongoose.model('Hotel', HotelSchema);

@@ -5,9 +5,10 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import adminRoutes from './routes/adminRoutes.js';
-import hotelRoutes from './routes/hotelRoutes.js';
-import ezeeHotelRoutes from './routes/ezeeHotelsRoute.js';
+import hotelRoutes from './routes/ImageUpload.js';
 import instagramRoutes from './routes/instagramRoutes.js'; // Import the Instagram routes
+import ezeeRoutes from './routes/ezeeRoutes.js'; // Import the Instagram routes
+import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -34,10 +35,13 @@ app.use(
 
 // API Routes
 app.use('/api/admin', adminRoutes);
-app.use('/api/hotels', hotelRoutes);
 app.use('/api/images', hotelRoutes);
-app.use('/api/ezeehotels', ezeeHotelRoutes);
 app.use('/api/instagram', instagramRoutes);
+
+app.use('/api/ezee', ezeeRoutes);
+
+app.use('/api/websiteData', websiteDataRoutes);
+
 
 
 const __filename = fileURLToPath(import.meta.url);

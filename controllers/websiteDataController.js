@@ -379,3 +379,31 @@ export const updateFaqs = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+export const addContactUsDetail = async (req, res) => {
+  try {
+    const { phoneNumber, emailId } = req.body;
+
+    let websiteData = await WebsiteData.findOne();
+
+    if (!websiteData) {
+      websiteData = new WebsiteData({
+        ContactUsDetail: { phoneNumber, emailId }
+      });
+    } else {
+      websiteData.ContactUsDetail = { phoneNumber, emailId };
+    }
+
+    await websiteData.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Contact Detail successfully',
+      data: websiteData.ContactUsDetail
+    });
+  } catch (error) {
+    console.error('Error updating Contact Detail :', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

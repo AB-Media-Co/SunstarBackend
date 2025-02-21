@@ -4,7 +4,11 @@ import Room from '../models/Room.js';
 
 
 const convertToAMPM = (timeStr) => {
-  if (!timeStr) return timeStr; 
+  if (!timeStr) return timeStr;
+  if (timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) {
+    return timeStr;
+  }
+  
   const [hourStr, minuteStr] = timeStr.split(':');
   let hour = Number(hourStr);
   const minute = minuteStr;
@@ -13,6 +17,7 @@ const convertToAMPM = (timeStr) => {
   if (hour === 0) hour = 12;
   return `${hour}:${minute} ${ampm}`;
 };
+
 
 export const getSingleHotel = async (req, res) => {
   try {

@@ -9,6 +9,7 @@ import hotelRoutes from './routes/ImageUpload.js';
 import instagramRoutes from './routes/instagramRoutes.js'; // Import the Instagram routes
 import ezeeRoutes from './routes/ezeeRoutes.js'; // Import the Instagram routes
 import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
+import paymentRoutes from './routes/paymentRoutes.js'; 
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -41,6 +42,8 @@ app.use('/api/instagram', instagramRoutes);
 app.use('/api/ezee', ezeeRoutes);
 
 app.use('/api/websiteData', websiteDataRoutes);
+app.use("/api/payments", paymentRoutes);
+
 
 
 

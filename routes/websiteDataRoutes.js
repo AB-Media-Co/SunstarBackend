@@ -16,7 +16,8 @@ import {
   gridImages,
   addCoorporateBooking,
   updateHomePageDescription,
-  updateFaqs
+  updateFaqs,
+  addContactUsDetail
 } from '../controllers/websiteDataController.js';
 
 const router = express.Router();
@@ -53,6 +54,7 @@ router.post('/whysunstarValue',updateValueSection)
 router.post('/testimonial',createTestimonial)
 router.post('/coorporate-Booking',addCoorporateBooking)
 router.post('/updateFaqs',updateFaqs)
+router.post('/contactUs',addContactUsDetail)
 
 
 

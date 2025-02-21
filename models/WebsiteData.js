@@ -223,6 +223,19 @@ const FaqSchema = new Schema({
   },
 });
 
+const ContactUsDetailSchema = new Schema({
+  phoneNumber: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  emailId: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+});
+
 
 const WebsiteDataSchema = new Schema(
   {
@@ -236,6 +249,7 @@ const WebsiteDataSchema = new Schema(
     WhySunstar: WhySunstarSchema,
     Testimonials: TestimonialSchema,
     CoorporateBooking:CoorporateBookingSchmea,
+    ContactUsDetail:ContactUsDetailSchema,
     faqs: [FaqSchema],
   }
 );

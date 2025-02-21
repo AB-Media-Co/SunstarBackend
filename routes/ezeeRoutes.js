@@ -12,7 +12,7 @@ import {
   fetchRoomInformation,
 } from '../controllers/ezeeController.js';
 import { addHotel, deleteHotel, editHotel, getAllHotels, getSingleHotel } from '../controllers/adminHotelController.js';
-import { createOrUpdateRoom,  getSyncedRooms } from '../controllers/roomController.js';
+import { createOrUpdateRoom,  getRoomById,  getSyncedRooms } from '../controllers/roomController.js';
 
 const router = express.Router();
 
@@ -37,6 +37,7 @@ router.post('/fetch/roominfo/:hotelCode/:authKey', fetchRoomInformation);
 
 router.get('/syncedRooms', getSyncedRooms);
 router.post('/rooms', createOrUpdateRoom);
+router.get('/room/:id', getRoomById);
 
 
 

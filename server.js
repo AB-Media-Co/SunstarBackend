@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: ['http://localhost:5173', 'https://live.ipms247.com/','https://sunstar-mu.vercel.app'],
+    origin: ['http://localhost:5173', 'https://live.ipms247.com/','https://sunstar-mu.vercel.app','https://sunstarbackend.onrender.com/'],
   })
 );
 

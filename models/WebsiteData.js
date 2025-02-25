@@ -233,14 +233,14 @@ const ContactUsDetailSchema = new Schema({
     required: true,
     trim: true,
   },
-  OtherEnquieirs:[{
+  OtherEnquieirs:{
     reservations:{type: String, required: true, trim: true},
     corporateSales:{type: String, required: true, trim: true},
     traveAgentSales:{type: String, required: true, trim: true},
     marketing:{type: String, required: true, trim: true},
     careers:{type: String, required: true, trim: true},
     hotelDevelopment:{type: String, required: true, trim: true},
-  }]
+  }
 });
 
 

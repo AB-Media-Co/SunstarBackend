@@ -48,23 +48,21 @@ app.use(
   })
 );
 
-app.use(express.static(path.join(__dirname, 'build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-
-
 // API Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/images', hotelRoutes);
 app.use('/api/instagram', instagramRoutes);
-
 app.use('/api/ezee', ezeeRoutes);
-
 app.use('/api/websiteData', websiteDataRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use('/api/payments', paymentRoutes);
 
+// Serve static files
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Catch-all to serve index.html for any other GET requests (e.g., frontend routing)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 
 const PORT = process.env.PORT || 5000;

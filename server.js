@@ -10,6 +10,7 @@ import instagramRoutes from './routes/instagramRoutes.js';
 import ezeeRoutes from './routes/ezeeRoutes.js'; 
 import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
 import paymentRoutes from './routes/paymentRoutes.js'; 
+import enquieryFormRoute from './routes/enquieryFormRoute.js'; 
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -55,6 +56,7 @@ app.use('/api/instagram', instagramRoutes);
 app.use('/api/ezee', ezeeRoutes);
 app.use('/api/websiteData', websiteDataRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/enquiries', enquieryFormRoute);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));

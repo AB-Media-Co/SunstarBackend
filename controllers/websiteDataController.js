@@ -286,7 +286,7 @@ export const createOffering = async (req, res) => {
 
 export const updateValueSection = async (req, res) => {
   try {
-    const { heading, valueData } = req.body;
+    const { heading, valueData ,heroSectionDescription} = req.body;
 
     if (!heading || !Array.isArray(valueData)) {
       return res.status(400).json({ error: 'Heading and valueData array are required.' });
@@ -298,6 +298,7 @@ export const updateValueSection = async (req, res) => {
       WhySunstarValue: {
         heading,
         valueData,
+        heroSectionDescription
       },
     };
 
@@ -383,27 +384,28 @@ export const updateFaqs = async (req, res) => {
 
 export const addContactUsDetail = async (req, res) => {
   try {
-    const { phoneNumber, emailId } = req.body;
+    const { phoneNumber, emailId, OtherEnquieirs } = req.body;
 
     let websiteData = await WebsiteData.findOne();
 
     if (!websiteData) {
       websiteData = new WebsiteData({
-        ContactUsDetail: { phoneNumber, emailId }
+        ContactUsDetail: { phoneNumber, emailId, OtherEnquieirs }
       });
     } else {
-      websiteData.ContactUsDetail = { phoneNumber, emailId };
+      websiteData.ContactUsDetail = { phoneNumber, emailId, OtherEnquieirs };
     }
 
     await websiteData.save();
 
     res.status(200).json({
       success: true,
-      message: 'Contact Detail successfully',
+      message: 'Contact Detail updated successfully',
       data: websiteData.ContactUsDetail
     });
   } catch (error) {
-    console.error('Error updating Contact Detail :', error);
+    console.error('Error updating Contact Detail:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

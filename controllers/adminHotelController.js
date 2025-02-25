@@ -1,8 +1,6 @@
 import Hotel from '../models/Hotel.js';
 import Room from '../models/Room.js';
 
-
-
 const convertToAMPM = (timeStr) => {
   if (!timeStr) return timeStr;
   if (timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) {
@@ -17,7 +15,6 @@ const convertToAMPM = (timeStr) => {
   if (hour === 0) hour = 12;
   return `${hour}:${minute} ${ampm}`;
 };
-
 
 export const getSingleHotel = async (req, res) => {
   try {
@@ -37,6 +34,7 @@ export const getSingleHotel = async (req, res) => {
       hotelObj.checkOut = convertToAMPM(hotelObj.checkOut);
     }
 
+      
     const rooms = await Room.find({ HotelCode: hotelCode.toString() });
     res.json({
       message: 'Hotel fetched successfully',
@@ -67,10 +65,9 @@ export const getAllHotels = async (req, res) => {
   }
 };
 
-
-
 export const addHotel = async (req, res) => {
   try {
+
     const newHotel = new Hotel(req.body);
     const savedHotel = await newHotel.save();
     res.status(201).json({ message: 'Hotel added successfully', hotel: savedHotel });
@@ -82,7 +79,8 @@ export const addHotel = async (req, res) => {
 export const editHotel = async (req, res) => {
   let { hotelCode } = req.params;
   hotelCode = Number(hotelCode);
-   const { hotelCode: bodyHotelCode, authKey, ...updateFields } = req.body;
+  // Exclude hotelCode and authKey from update fields
+  const { hotelCode: bodyHotelCode, authKey, ...updateFields } = req.body;
 
   try {
     const existingHotel = await Hotel.findOne({ hotelCode });
@@ -90,6 +88,7 @@ export const editHotel = async (req, res) => {
       return res.status(404).json({ error: 'Hotel not found' });
     }
 
+    // If the location is being updated, ensure that it follows the new structure as described above.
     const updatedHotel = await Hotel.findOneAndUpdate(
       { hotelCode },
       updateFields,
@@ -104,8 +103,6 @@ export const editHotel = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
 export const deleteHotel = async (req, res) => {
   try {

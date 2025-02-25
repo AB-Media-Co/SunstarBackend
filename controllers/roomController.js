@@ -29,7 +29,6 @@ export const getSyncedRooms = async (req, res) => {
   <ToDate>${finalToDate}</ToDate>
 </RES_Request>`;
 
-    console.log('XML Payload:', xmlPayload);
 
     // Call the ezee API
     const ezeeResponse = await axios.post(
@@ -105,7 +104,6 @@ export const getSyncedRooms = async (req, res) => {
   }
 };
 
-
 export const getRoomById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -128,13 +126,15 @@ export const createOrUpdateRoom = async (req, res) => {
       HotelCode,
       RoomName,
       RoomDescription,
-      Amenities,   // Expecting an array of objects: [{ value, label }, ...]
-      AboutRoom,   // Expecting an object: { description, img }
+      Amenities,
+      AboutRoom,   
       maxGuests,
       squareFeet,
-      discountRate,
+      discountRate, 
+      defaultRate,
       available,
     } = req.body;
+    console.log(req.body)
 
     if (!RoomTypeID || !RoomName) {
       return res.status(400).json({ error: 'RoomTypeID and RoomName are required' });
@@ -167,12 +167,11 @@ export const createOrUpdateRoom = async (req, res) => {
       { headers: { 'Content-Type': 'application/xml' } }
     );
 
-    console.log('Raw Ezee XML Response:', ezeeResponse.data);
 
     const parser = new xml2js.Parser({ explicitArray: false });
     const parsedResult = await parser.parseStringPromise(ezeeResponse.data);
 
-    let defaultRate;
+    let defaultRateFromAPI;
     if (
       parsedResult &&
       parsedResult.RES_Response &&
@@ -189,17 +188,17 @@ export const createOrUpdateRoom = async (req, res) => {
 
           for (const rate of rateTypes) {
             if (rate.RoomTypeID === RoomTypeID) {
-              defaultRate = parseFloat(rate.RoomRate?.Base) || 0;
+              defaultRateFromAPI = parseFloat(rate.RoomRate?.Base) || 0;
               break;
             }
           }
         }
-        if (defaultRate !== undefined) break;
+        if (defaultRateFromAPI !== undefined) break;
       }
     }
 
-    if (defaultRate === undefined) {
-      defaultRate = 0;
+    if (defaultRateFromAPI === undefined) {
+      defaultRateFromAPI = 0;
     }
 
     let room = await Room.findOne({ RoomTypeID });
@@ -208,13 +207,11 @@ export const createOrUpdateRoom = async (req, res) => {
       room.HotelCode = HotelCode;
       room.RoomName = RoomName;
       room.RoomDescription = RoomDescription;
-      room.Amenities = Amenities; // Now expecting an array of objects
-      room.AboutRoom = AboutRoom; // { description, img }
-      room.defaultRate = defaultRate;
+      room.Amenities = Amenities;
+      room.AboutRoom = AboutRoom;
+      room.discountRate = defaultRateFromAPI; 
       room.available = available;
-      if (discountRate !== undefined) {
-        room.discountRate = parseFloat(discountRate);
-      }
+      room.defaultRate = defaultRate !== undefined ? parseFloat(defaultRate) : room.defaultRate; 
       if (maxGuests !== undefined) room.maxGuests = maxGuests;
       if (squareFeet !== undefined) room.squareFeet = squareFeet;
       await room.save();
@@ -226,10 +223,10 @@ export const createOrUpdateRoom = async (req, res) => {
         HotelCode,
         RoomName,
         RoomDescription,
-        Amenities,  
-        AboutRoom, 
-        defaultRate,
-        discountRate: discountRate !== undefined ? parseFloat(discountRate) : undefined,
+        Amenities,
+        AboutRoom,
+        defaultRate: defaultRate !== undefined ? parseFloat(defaultRate) : undefined,
+        discountRate: defaultRateFromAPI, 
         maxGuests,
         squareFeet,
         available,
@@ -237,6 +234,7 @@ export const createOrUpdateRoom = async (req, res) => {
       await newRoom.save();
       return res.status(201).json(newRoom);
     }
+    
   } catch (error) {
     console.error('Error creating/updating room:', error);
     return res.status(500).json({ error: 'Internal Server Error' });

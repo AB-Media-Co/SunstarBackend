@@ -117,9 +117,8 @@ const ValueDataSchema = new Schema({
 const ValueSectionSchema = new Schema({
   heading: { type: String, required: true, trim: true },
   valueData: [ValueDataSchema],
+  heroSectionDescription: { type: String }
 });
-
-
 
 const WhySunstarSchema = new Schema({
   WhySunstarValue: ValueSectionSchema,
@@ -234,6 +233,14 @@ const ContactUsDetailSchema = new Schema({
     required: true,
     trim: true,
   },
+  OtherEnquieirs:[{
+    reservations:{type: String, required: true, trim: true},
+    corporateSales:{type: String, required: true, trim: true},
+    traveAgentSales:{type: String, required: true, trim: true},
+    marketing:{type: String, required: true, trim: true},
+    careers:{type: String, required: true, trim: true},
+    hotelDevelopment:{type: String, required: true, trim: true},
+  }]
 });
 
 

@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import adminRoutes from './routes/adminRoutes.js';
 import hotelRoutes from './routes/ImageUpload.js';
-import instagramRoutes from './routes/instagramRoutes.js'; // Import the Instagram routes
-import ezeeRoutes from './routes/ezeeRoutes.js'; // Import the Instagram routes
+import instagramRoutes from './routes/instagramRoutes.js'; 
+import ezeeRoutes from './routes/ezeeRoutes.js'; 
 import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
 import paymentRoutes from './routes/paymentRoutes.js'; 
 import connectDB from './config/db.js';
@@ -30,9 +30,15 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: ['http://localhost:5173', 'https://live.ipms247.com/','https://sunstar-mu.vercel.app'],
+    origin: [
+      'http://localhost:5173', 
+      'https://live.ipms247.com',
+      'https://sunstar-mu.vercel.app',
+      'https://sunstarbackend.onrender.com'
+    ],
   })
 );
+
 
 // API Routes
 app.use('/api/admin', adminRoutes);

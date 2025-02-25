@@ -1,4 +1,4 @@
-import{b as ne,r as i,j as e,A as ie,m as Y,k as ae,d as oe,l as re,n as le}from"./index-DzvDaj7C.js";import{C as ce,G as Ae,a as de,d as me,R as xe,A as pe,F as ge}from"./AmenitiesList2-jC7-aMCh.js";import{I as q}from"./Icons-qMq53xjR.js";import{T as ue}from"./TestimonialSection-DR6hKHWk.js";import{B as fe}from"./BannerSection-yCh9i-fF.js";import{I as he}from"./ImageGallery-D5QN0_7M.js";import{C as $}from"./CloseOutlined-CstMWUdo.js";import"./Remove-DC3xRJSS.js";import"./CommonSlider-C-QhjNQR.js";import"./pagination-WmA1COk0.js";/**
+import{b as ne,r as i,j as e,A as ie,m as Y,k as ae,d as oe,l as re,n as le}from"./index-BEG9qRvO.js";import{C as ce,G as Ae,a as de,d as me,R as xe,A as pe,F as ge}from"./AmenitiesList2-Dfb_EBrI.js";import{I as q}from"./Icons-CU1thNpH.js";import{T as ue}from"./TestimonialSection-BqN7-WQD.js";import{B as fe}from"./BannerSection-BQibiNIV.js";import{I as he}from"./ImageGallery-DvkOvy7N.js";import{C as $}from"./CloseOutlined-lJvINWII.js";import"./Remove-CKfpTtVl.js";import"./CommonSlider-DAskGuII.js";import"./pagination-BOLErRih.js";/**
  * @license lucide-react v0.468.0 - ISC
  *
  * This source code is licensed under the ISC license.

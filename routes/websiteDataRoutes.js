@@ -5,9 +5,6 @@ import {
   deleteAmenity, 
   updateAmenity,
   addAmenities,
-  addLocation,
-  updateLocation,
-  deleteLocation,
   updateShineSection,
   updateHeroSection,
   createOffering,
@@ -29,10 +26,6 @@ router.post('/amenities', addAmenities);
 router.put('/amenities/:amenityId', updateAmenity);
 router.delete('/amenities/:amenityId', deleteAmenity);
 
-// location
-router.post('/locations', addLocation);
-router.put('/locations/:locationId', updateLocation);
-router.delete('/locations/:locationId', deleteLocation);
 
 // images
 router.post('/images', gridImages);

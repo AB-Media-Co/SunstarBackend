@@ -17,15 +17,6 @@ const AmenitySchema = new Schema(
   }
 );
 
-const LocationSchema = new Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  }
-);
 
 
 const FeatureSchema = new Schema(
@@ -247,7 +238,6 @@ const ContactUsDetailSchema = new Schema({
 const WebsiteDataSchema = new Schema(
   {
     amenities: [AmenitySchema],
-    locations: [LocationSchema],
     grid: GridItemSchema,
     shineSection: ShineSectionSchema,
     heroSection: HeroSectionSchema,

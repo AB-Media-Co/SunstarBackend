@@ -78,64 +78,6 @@ export const deleteAmenity = async (req, res) => {
 
 
 
-// Location
-
-export const addLocation = async (req, res) => {
-  try {
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required.' });
-    }
-    const websiteData = await getOrCreateWebsiteData();
-    websiteData.locations.push({ name });
-    await websiteData.save();
-    res.status(201).json(websiteData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const updateLocation = async (req, res) => {
-  try {
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required.' });
-    }
-    const websiteData = await getOrCreateWebsiteData();
-    const location = websiteData.locations.id(req.params.locationId);
-    if (!location) {
-      return res.status(404).json({ error: 'Location not found.' });
-    }
-    location.name = name;
-    await websiteData.save();
-    res.json(websiteData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const deleteLocation = async (req, res) => {
-  try {
-    const { locationId } = req.params;
-
-    const websiteData = await getOrCreateWebsiteData();
-
-    const updatedWebsiteData = await WebsiteData.findOneAndUpdate(
-      { 'locations._id': locationId },
-      { $pull: { locations: { _id: locationId } } },
-      { new: true }
-    );
-
-    if (!updatedWebsiteData) {
-      return res.status(404).json({ error: 'Location not found.' });
-    }
-
-    res.json(updatedWebsiteData);
-  } catch (err) {
-    console.error('Error deleting location:', err);
-    res.status(500).json({ error: err.message });
-  }
-};
 
 
 

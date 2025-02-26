@@ -11,6 +11,7 @@ import ezeeRoutes from './routes/ezeeRoutes.js';
 import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
 import paymentRoutes from './routes/paymentRoutes.js'; 
 import enquieryFormRoute from './routes/enquieryFormRoute.js'; 
+import locationRoutes from './routes/locationRoutes.js'; 
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -49,7 +50,6 @@ app.use(
   })
 );
 
-// API Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/images', hotelRoutes);
 app.use('/api/instagram', instagramRoutes);
@@ -57,11 +57,12 @@ app.use('/api/ezee', ezeeRoutes);
 app.use('/api/websiteData', websiteDataRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/enquiries', enquieryFormRoute);
+app.use('/api/locations', locationRoutes);
 
-// Serve static files
+
+
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Catch-all to serve index.html for any other GET requests (e.g., frontend routing)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });

@@ -9,15 +9,15 @@ const LocationSchema = new Schema(
       heading: { type: String },
       paragraph: { type: String }
     },
-    image: { type: String },
-    hotels: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Hotel'
-      }
-    ]
+    image: { type: String }
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+LocationSchema.virtual('hotels', {
+  ref: 'Hotel',          
+  localField: '_id',     
+  foreignField: 'cityLocation'
+});
 
 export default model('Location', LocationSchema);

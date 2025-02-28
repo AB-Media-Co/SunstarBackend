@@ -14,6 +14,33 @@ const FAQSchema = new mongoose.Schema({
   answer: { type: String, required: true, trim: true }
 }, { _id: false });
 
+// Schema for "Add To Your Stay" section
+const AddToYourStaySchema = new mongoose.Schema({
+  heading: { type: String, required: true, trim: true },
+  description: { type: String, required: true, trim: true },
+  rate: {
+    amount: { type: Number, required: true },
+    period: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: ['per night', 'per day',''] 
+    }
+  }
+});
+
+const ContinentalPlanSchema = new mongoose.Schema({
+  rate: {
+    amount: { type: Number, required: true, min: [0, 'Rate must be a positive number'] },
+    period: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: ['per person', 'per breakfast']
+    }
+  }
+}, { _id: false });
+
 const HotelSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -33,6 +60,7 @@ const HotelSchema = new mongoose.Schema({
     activities: [LocationDetailSchema],
     nightlife: [LocationDetailSchema]
   },
+  cityLocation: { type: String, required: true },
   amenities: {
     value: {
       type: String,
@@ -87,6 +115,9 @@ const HotelSchema = new mongoose.Schema({
   },
   hotelCode: { type: Number, required: true },
   authKey: { type: String, required: true },
+  addToYourStay: {type:[AddToYourStaySchema]},
+  continentalPlan: { type: ContinentalPlanSchema },
+  payAtHotel:{type:String}
 });
 
 export default mongoose.model('Hotel', HotelSchema);

@@ -13,6 +13,7 @@ import {
 } from '../controllers/ezeeController.js';
 import { addHotel, deleteHotel, editHotel, getAllHotels, getSingleHotel } from '../controllers/adminHotelController.js';
 import { createOrUpdateRoom,  getRoomById,  getSyncedRooms } from '../controllers/roomController.js';
+import { getRoomAndHotelDetails } from '../controllers/getRoomAndHotelDetails.js';
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.post('/rooms', createOrUpdateRoom);
 router.get('/room/:id', getRoomById);
 
 
+router.get('/details', getRoomAndHotelDetails);
 
 
 export default router;

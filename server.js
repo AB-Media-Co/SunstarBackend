@@ -13,6 +13,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import enquieryFormRoute from './routes/enquieryFormRoute.js'; 
 import locationRoutes from './routes/locationRoutes.js'; 
 import connectDB from './config/db.js';
+import dealRoutes from './routes/dealRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -58,6 +59,7 @@ app.use('/api/websiteData', websiteDataRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/enquiries', enquieryFormRoute);
 app.use('/api/locations', locationRoutes);
+app.use('/api/deals', dealRoutes);
 
 
 

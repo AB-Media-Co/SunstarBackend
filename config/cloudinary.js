@@ -15,7 +15,6 @@ cloudinary.v2.config({
 
 export default cloudinary.v2;
 
-// Multer setup for handling file uploads
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -26,17 +25,14 @@ const upload = multer({
       cb(new Error('Only JPEG and PNG files are allowed'), false);
     }
   },
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit per file
-}).array('images', 5); // Accept up to 5 files
-
-// Function to upload images to Cloudinary
+  limits: { fileSize: 1024 * 1024 * 10 }, // 20MB limit per file
+}).array('images', 10); // Accept up to 10 files
 export const uploadImages = asyncHandler(async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       console.error('Multer error:', err);
       return res.status(400).json({ success: false, message: err.message });
     }
-
 
     try {
       const imageUploadPromises = req.files.map((file) => {
@@ -73,4 +69,3 @@ export const uploadImages = asyncHandler(async (req, res) => {
     }
   });
 });
-

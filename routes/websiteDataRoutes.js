@@ -49,8 +49,4 @@ router.post('/coorporate-Booking',addCoorporateBooking)
 router.post('/updateFaqs',updateFaqs)
 router.post('/contactUs',addContactUsDetail)
 
-
-
-
-
 export default router;

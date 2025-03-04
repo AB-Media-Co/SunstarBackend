@@ -21,7 +21,7 @@ export const getSingleHotel = async (req, res) => {
     let { hotelCode } = req.params;
     const numericHotelCode = Number(hotelCode);
 
-    const hotel = await Hotel.findOne({ hotelCode: numericHotelCode });
+    const hotel = await Hotel.findOne({ hotelCode: numericHotelCode }).populate('cityLocation');
     if (!hotel) {
       return res.status(404).json({ error: 'Hotel not found' });
     }
@@ -47,7 +47,7 @@ export const getSingleHotel = async (req, res) => {
 
 export const getAllHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find();
+    const hotels = await Hotel.find().populate('cityLocation');
     // Convert times for each hotel if available
     const modifiedHotels = hotels.map(hotel => {
       const h = hotel.toObject();
@@ -93,7 +93,7 @@ export const editHotel = async (req, res) => {
       { hotelCode },
       updateFields,
       { new: true }
-    );
+    ).populate('cityLocation');
     if (!updatedHotel) {
       return res.status(404).json({ error: 'Hotel not found after update' });
     }

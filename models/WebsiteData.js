@@ -193,9 +193,17 @@ const CoorporateBookingescriptionSection = new Schema({
 });
 
 
+const BusinessPlatformSection = new Schema({
+  title: { type: String },
+  description: { type: String }
+});
+
+
+
 const CoorporateBookingSchmea = new Schema({
   CoorporateBookingHeadContent: CoorporateBookingHeroSection,
   CoorporateBookingDescription: CoorporateBookingescriptionSection,
+  BusinessPlatformSection: [BusinessPlatformSection],
 });
 
 

@@ -1,6 +1,5 @@
 
 import WebsiteData from "../models/WebsiteData.js";
-import { v4 as uuidv4 } from 'uuid';
 
 const getOrCreateWebsiteData = async () => {
   let websiteData = await WebsiteData.findOne();
@@ -75,9 +74,6 @@ export const deleteAmenity = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
-
 
 
 
@@ -273,16 +269,16 @@ export const createTestimonial = async (req, res) => {
 
 export const addCoorporateBooking = async (req, res) => {
   try {
-    const { CoorporateBookingHeadContent, CoorporateBookingDescription } = req.body;
+    const { CoorporateBookingHeadContent, CoorporateBookingDescription,BusinessPlatformSection } = req.body;
 
     let websiteData = await WebsiteData.findOne();
 
     if (!websiteData) {
       websiteData = new WebsiteData({
-        CoorporateBooking: { CoorporateBookingHeadContent, CoorporateBookingDescription }
+        CoorporateBooking: { CoorporateBookingHeadContent, CoorporateBookingDescription,BusinessPlatformSection }
       });
     } else {
-      websiteData.CoorporateBooking = { CoorporateBookingHeadContent, CoorporateBookingDescription };
+      websiteData.CoorporateBooking = { CoorporateBookingHeadContent, CoorporateBookingDescription ,BusinessPlatformSection};
     }
 
     await websiteData.save();

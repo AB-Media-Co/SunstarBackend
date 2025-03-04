@@ -12,11 +12,12 @@ export const getRoomAndHotelDetails = async (req, res) => {
     }
     
     const room = await Room.findById(roomId)
-    .select('RoomName RoomTypeID discountRate maxGuests')
-    .lean();
+      .select('RoomName RoomTypeID discountRate maxGuests')
+      .lean();
       
-    const hotel = await Hotel.findOne({ hotelCode: hotelCode })
+    const hotel = await Hotel.findOne({ hotelCode: Number(hotelCode) })
       .select('aboutUs addToYourStay authKey checkIn checkOut continentalPlan cityLocation name payAtHotel price rating hotelCode')
+      .populate('cityLocation') // Populating only the 'name' field of cityLocation
       .lean();
 
     if (!room) {

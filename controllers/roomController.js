@@ -30,14 +30,12 @@ export const getSyncedRooms = async (req, res) => {
 </RES_Request>`;
 
 
-    // Call the ezee API
     const ezeeResponse = await axios.post(
       'https://live.ipms247.com/pmsinterface/getdataAPI.php',
       xmlPayload,
       { headers: { 'Content-Type': 'application/xml' } }
     );
 
-    // Parse the XML response
     const parser = new xml2js.Parser({ explicitArray: false });
     const parsedResult = await parser.parseStringPromise(ezeeResponse.data);
     let ezeeRooms = [];
@@ -118,6 +116,7 @@ export const getRoomById = async (req, res) => {
   }
 };
 
+
 export const createOrUpdateRoom = async (req, res) => {
   try {
     const {
@@ -130,16 +129,18 @@ export const createOrUpdateRoom = async (req, res) => {
       AboutRoom,   
       maxGuests,
       squareFeet,
-      discountRate, 
+      discountRate, // not used in current logic; using API value instead
       defaultRate,
       available,
     } = req.body;
-    console.log(req.body)
+
+    console.log('Request Body:', req.body);
 
     if (!RoomTypeID || !RoomName) {
       return res.status(400).json({ error: 'RoomTypeID and RoomName are required' });
     }
 
+    // Extract query parameters
     const { hotelCode, authCode, fromDate, toDate } = req.query;
     if (!hotelCode || !authCode) {
       return res.status(400).json({
@@ -150,6 +151,7 @@ export const createOrUpdateRoom = async (req, res) => {
     const finalFromDate = fromDate || getToday();
     const finalToDate = toDate || getTomorrow();
 
+    // Prepare XML payload for API call
     const xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
 <RES_Request>
   <Request_Type>Rate</Request_Type>
@@ -161,62 +163,64 @@ export const createOrUpdateRoom = async (req, res) => {
   <ToDate>${finalToDate}</ToDate>
 </RES_Request>`;
 
-    const ezeeResponse = await axios.post(
-      'https://live.ipms247.com/pmsinterface/getdataAPI.php',
-      xmlPayload,
-      { headers: { 'Content-Type': 'application/xml' } }
-    );
+    // Default rate fetched from API, fallback to 0 if any error occurs.
+    let defaultRateFromAPI = 0;
+    try {
+      const ezeeResponse = await axios.post(
+        'https://live.ipms247.com/pmsinterface/getdataAPI.php',
+        xmlPayload,
+        { headers: { 'Content-Type': 'application/xml' } }
+      );
+      const parser = new xml2js.Parser({ explicitArray: false });
+      const parsedResult = await parser.parseStringPromise(ezeeResponse.data);
 
+      if (parsedResult?.RES_Response?.RoomInfo?.Source) {
+        let sources = parsedResult.RES_Response.RoomInfo.Source;
+        if (!Array.isArray(sources)) sources = [sources];
 
-    const parser = new xml2js.Parser({ explicitArray: false });
-    const parsedResult = await parser.parseStringPromise(ezeeResponse.data);
-
-    let defaultRateFromAPI;
-    if (
-      parsedResult &&
-      parsedResult.RES_Response &&
-      parsedResult.RES_Response.RoomInfo &&
-      parsedResult.RES_Response.RoomInfo.Source
-    ) {
-      let sources = parsedResult.RES_Response.RoomInfo.Source;
-      if (!Array.isArray(sources)) sources = [sources];
-
-      for (const source of sources) {
-        if (source.RoomTypes && source.RoomTypes.RateType) {
-          let rateTypes = source.RoomTypes.RateType;
-          if (!Array.isArray(rateTypes)) rateTypes = [rateTypes];
-
-          for (const rate of rateTypes) {
-            if (rate.RoomTypeID === RoomTypeID) {
-              defaultRateFromAPI = parseFloat(rate.RoomRate?.Base) || 0;
-              break;
+        // Loop through sources and rate types to match the RoomTypeID
+        outerLoop:
+        for (const source of sources) {
+          if (source.RoomTypes?.RateType) {
+            let rateTypes = source.RoomTypes.RateType;
+            if (!Array.isArray(rateTypes)) rateTypes = [rateTypes];
+            for (const rate of rateTypes) {
+              if (rate.RoomTypeID === RoomTypeID) {
+                defaultRateFromAPI = parseFloat(rate.RoomRate?.Base) || 0;
+                break outerLoop;
+              }
             }
           }
         }
-        if (defaultRateFromAPI !== undefined) break;
       }
-    }
-
-    if (defaultRateFromAPI === undefined) {
+    } catch (apiError) {
+      console.error('Error fetching default rate from API:', apiError.message);
+      // Continue with defaultRateFromAPI as 0
       defaultRateFromAPI = 0;
     }
 
+    // Use the fetched default rate as the discount rate
+    const computedDiscountRate = defaultRateFromAPI;
+
+    // Check if room exists by RoomTypeID
     let room = await Room.findOne({ RoomTypeID });
     if (room) {
+      // Update existing room
       room.RoomImage = RoomImage;
       room.HotelCode = HotelCode;
       room.RoomName = RoomName;
       room.RoomDescription = RoomDescription;
       room.Amenities = Amenities;
       room.AboutRoom = AboutRoom;
-      room.discountRate = defaultRateFromAPI; 
+      room.discountRate = computedDiscountRate;
       room.available = available;
-      room.defaultRate = defaultRate !== undefined ? parseFloat(defaultRate) : room.defaultRate; 
+      room.defaultRate = defaultRate !== undefined ? parseFloat(defaultRate) : room.defaultRate;
       if (maxGuests !== undefined) room.maxGuests = maxGuests;
       if (squareFeet !== undefined) room.squareFeet = squareFeet;
       await room.save();
       return res.status(200).json(room);
     } else {
+      // Create a new room document
       const newRoom = new Room({
         RoomTypeID,
         RoomImage,
@@ -226,7 +230,7 @@ export const createOrUpdateRoom = async (req, res) => {
         Amenities,
         AboutRoom,
         defaultRate: defaultRate !== undefined ? parseFloat(defaultRate) : undefined,
-        discountRate: defaultRateFromAPI, 
+        discountRate: computedDiscountRate,
         maxGuests,
         squareFeet,
         available,
@@ -237,6 +241,22 @@ export const createOrUpdateRoom = async (req, res) => {
     
   } catch (error) {
     console.error('Error creating/updating room:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+// In your roomController.js (or similar controller file)
+export const deleteRoomById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedRoom = await Room.findByIdAndDelete(id);
+    if (!deletedRoom) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    return res.json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting room:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };

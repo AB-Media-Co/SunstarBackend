@@ -44,6 +44,7 @@ const ContinentalPlanSchema = new mongoose.Schema({
 const HotelSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
   aboutUs: {
     description: { type: String },
     img: { type: String }

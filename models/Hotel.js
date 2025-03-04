@@ -60,7 +60,8 @@ const HotelSchema = new mongoose.Schema({
     activities: [LocationDetailSchema],
     nightlife: [LocationDetailSchema]
   },
-  cityLocation: { type: String, required: true },
+  // Changed cityLocation from String to ObjectId with ref to 'Location'
+  cityLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
   amenities: {
     value: {
       type: String,
@@ -115,9 +116,9 @@ const HotelSchema = new mongoose.Schema({
   },
   hotelCode: { type: Number, required: true },
   authKey: { type: String, required: true },
-  addToYourStay: {type:[AddToYourStaySchema]},
+  addToYourStay: { type: [AddToYourStaySchema] },
   continentalPlan: { type: ContinentalPlanSchema },
-  payAtHotel:{type:String}
+  payAtHotel: { type: String }
 });
 
 export default mongoose.model('Hotel', HotelSchema);

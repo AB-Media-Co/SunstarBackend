@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { dropUnwantedIndexes } from './dropIndexes.js';
 
 const connectDB = async () => {
   try {
@@ -7,6 +8,9 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log("MongoDB connected");
+
+    await dropUnwantedIndexes();
+    
   } catch (error) {
     console.log("MongoDB connection error:", error);
     process.exit(1);

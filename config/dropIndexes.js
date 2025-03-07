@@ -3,17 +3,22 @@ import Room from '../models/Room.js';
 
 export const dropUnwantedIndexes = async () => {
   try {
-    // List current indexes
-    const indexes = await Room.collection.getIndexes();
+    // Fetch all indexes on the Room collection
+    const indexes = await Room.collection.indexInformation();
     console.log("Current indexes on Room collection:", indexes);
 
-    // If the single-field index on RoomTypeID exists, drop it.
-    if (indexes.RoomTypeID_1) {
-      console.log("Dropping single-field index on RoomTypeID...");
-      await Room.collection.dropIndex("RoomTypeID_1");
-      console.log("Dropped RoomTypeID_1 index.");
+    const unwantedIndexes = ['RateTypeID_1', 'RoomTypeID_1']; // Add more if needed
+
+    for (const indexName of unwantedIndexes) {
+      if (indexes[indexName]) {
+        console.log(`Dropping index: ${indexName}...`);
+        await Room.collection.dropIndex(indexName);
+        console.log(`Dropped ${indexName} index.`);
+      } else {
+        console.log(`Index ${indexName} does not exist, skipping.`);
+      }
     }
-    
+
     console.log("Index cleanup complete.");
   } catch (error) {
     console.error("Error dropping indexes:", error);

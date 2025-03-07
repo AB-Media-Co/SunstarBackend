@@ -14,6 +14,7 @@ import enquieryFormRoute from './routes/enquieryFormRoute.js';
 import locationRoutes from './routes/locationRoutes.js'; 
 import connectDB from './config/db.js';
 import dealRoutes from './routes/dealRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -45,7 +46,7 @@ app.use(
     origin: [
       'http://localhost:5173', 
       'https://live.ipms247.com',
-      'https://sunstar-mu.vercel.app',
+      'https://sunstarhospitality.com/',
       'https://sunstarbackend.onrender.com'
     ],
   })
@@ -60,7 +61,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/enquiries', enquieryFormRoute);
 app.use('/api/locations', locationRoutes);
 app.use('/api/deals', dealRoutes);
-
+app.use('/api/blogs', blogRoutes);
 
 
 app.use(express.static(path.join(__dirname, 'build')));

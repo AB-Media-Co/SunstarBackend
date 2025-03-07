@@ -9,6 +9,7 @@ const RoomSchema = new mongoose.Schema({
   RoomDescription: { type: String },
   FromDate: { type: String },
   ToDate: { type: String },
+  source: { type: String },
   AboutRoom: {
     description: { type: String },
     img: { type: String },
@@ -22,8 +23,10 @@ const RoomSchema = new mongoose.Schema({
   maxGuests: { type: Number },
   squareFeet: { type: Number },
   available: { type: Boolean },
+}, {
+  indexes: [
+    { key: { RoomTypeID: 1, RateTypeID: 1 } } // Non-unique index for faster queries
+  ]
 });
-
-RoomSchema.index({ RoomTypeID: 1, RateTypeID: 1 }, { unique: true });
 
 export default mongoose.model('Room', RoomSchema);

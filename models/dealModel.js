@@ -31,10 +31,27 @@ const dealSchema = new mongoose.Schema(
       default: 'mobileAndWeb'
     },
 
+    // --- NEW FIELDS for Last Minute & Early Booker logic ---
+    dealType: {
+      type: String,
+      enum: ['lastMinute', 'earlyBooker', 'standard'],
+      default: 'standard'
+    },
+    bookingRestrictionUnit: {
+      type: String,
+      enum: ['days', 'hours', 'none'],
+      default: 'none'
+    },
+    // e.g., “30 days or more”
+    minAdvance: { type: Number, default: 0 },
+    // e.g., “3 days or fewer”
+    maxAdvance: { type: Number, default: 0 },
+    // Limit the booking window to certain hours
+    limitPromotionToHours: { type: Boolean, default: false },
+    startHour: { type: Number, min: 0, max: 23, default: 0 },
+    endHour: { type: Number, min: 0, max: 23, default: 23 },
   },
   { timestamps: true }
 );
 
 export default mongoose.model('Deal', dealSchema);
-
-

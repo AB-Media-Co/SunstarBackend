@@ -29,6 +29,7 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.16",
     "razorpay": "^2.9.5",
+    "slugify": "^1.6.6",
     "twilio": "^5.4.5",
     "uuid": "^11.0.5",
     "xml2js": "^0.6.2"

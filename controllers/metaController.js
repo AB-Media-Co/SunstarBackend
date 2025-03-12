@@ -1,10 +1,10 @@
-import metamodel from "../models/metamodel.js";
+import SeoMetaModel from "../models/SeoMetaModel.js";
 
 // Create a new meta record
 export const createMeta = async (req, res) => {
   try {
     const { page, metaTitle, metaDescription, metaKeywords } = req.body;
-    const meta = new metamodel({
+    const meta = new SeoMetaModel({
       page,
       metaTitle,
       metaDescription,
@@ -31,7 +31,7 @@ export const getAllMeta = async (req, res) => {
 export const getMetaByPage = async (req, res) => {
   try {
     const { page } = req.params;
-    const meta = await Meta.findOne({ page });
+    const meta = await SeoMetaModel.findOne({ page });
     if (!meta) {
       return res.status(404).json({ message: 'Meta info not found for the given page' });
     }
@@ -47,7 +47,7 @@ export const updateMeta = async (req, res) => {
     const { id } = req.params;
     const { metaTitle, metaDescription, metaKeywords } = req.body;
 
-    const meta = await metamodel.findByIdAndUpdate(
+    const meta = await SeoMetaModel.findByIdAndUpdate(
       id,
       { metaTitle, metaDescription, metaKeywords },
       { new: true }
@@ -67,7 +67,7 @@ export const updateMeta = async (req, res) => {
 export const deleteMeta = async (req, res) => {
   try {
     const { id } = req.params;
-    const meta = await metamodel.findByIdAndDelete(id);
+    const meta = await SeoMetaModel.findByIdAndDelete(id);
 
     if (!meta) {
       return res.status(404).json({ message: 'Meta info not found' });

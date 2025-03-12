@@ -66,12 +66,14 @@ export const getAllHotels = async (req, res) => {
 };
 
 export const addHotel = async (req, res) => {
+  console.log(req.body)
   try {
 
     const newHotel = new Hotel(req.body);
     const savedHotel = await newHotel.save();
     res.status(201).json({ message: 'Hotel added successfully', hotel: savedHotel });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 };

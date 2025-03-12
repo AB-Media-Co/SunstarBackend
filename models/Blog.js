@@ -1,3 +1,4 @@
+// models/Blog.js
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 
@@ -21,6 +22,23 @@ const blogSchema = new mongoose.Schema({
     image: {
         type: String,
         default: null
+    },
+    keywords: {
+        type: [String],
+        default: []
+    },
+    category: {
+        type: String,
+        required: [true, 'Category is required'],
+        trim: true,
+        enum: [
+            "Leisure Travel", 
+            "Weekend Getaway", 
+            "Near By Attractions", 
+            "Travel Tips", 
+            "Nightlife", 
+            "Shopping"
+        ]
     },
     createdAt: {
         type: Date,

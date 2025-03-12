@@ -9,19 +9,22 @@ import {
   updateAnyProfile,
   deleteAnyProfile,
 } from '../controllers/adminController.js';
-import protect from '../middleware/authMiddleware.js';
+import { protect, restrictToRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Public routes
 router.post('/login', loginAdmin);
-router.post('/register', registerAdmin);
+router.post('/register', protect, restrictToRole(['superadmin']), registerAdmin); // Only SuperAdmin can register
 
+// Protected routes for individual profile
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.delete('/profile', protect, deleteProfile);
-    
-router.get('/profiles', protect, getAllProfiles);
-router.put('/profiles/:id', protect, updateAnyProfile);
-router.delete('/profiles/:id', protect, deleteAnyProfile);
+
+// Admin-only routes for managing all profiles
+router.get('/profiles', protect, restrictToRole(['superadmin', 'admin']), getAllProfiles);
+router.put('/profiles/:id', protect, restrictToRole(['superadmin', 'admin']), updateAnyProfile);
+router.delete('/profiles/:id', protect, restrictToRole(['superadmin', 'admin']), deleteAnyProfile);
 
 export default router;

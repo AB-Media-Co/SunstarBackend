@@ -4,20 +4,21 @@ import slugify from 'slugify';
 // Create a new blog
 export const createBlog = async (req, res) => {
     try {
-        const { title, description, image } = req.body;
+        const { title, description, image, keywords, category } = req.body;
         let slug = slugify(title, { lower: true, strict: true });
         
-        // Check for duplicate slug and make it unique if necessary
         const existingBlog = await Blog.findOne({ slug });
         if (existingBlog) {
-            slug = `${slug}-${Date.now()}`; // Append timestamp to ensure uniqueness
+            slug = `${slug}-${Date.now()}`; 
         }
 
         const blog = new Blog({
             title,
             description,
             image,
-            slug
+            slug,
+            keywords,
+            category
         });
 
         const savedBlog = await blog.save();
@@ -35,10 +36,27 @@ export const createBlog = async (req, res) => {
     }
 };
 
-// Get all blogs
+// Get all blogs with optional filtering by keyword or category
 export const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find().sort({ createdAt: -1 });
+        const { keyword, category } = req.query;
+        let query = {};
+
+        if (keyword) {
+            query.$or = [
+                { title: { $regex: keyword, $options: 'i' } },
+                { description: { $regex: keyword, $options: 'i' } },
+                { keywords: { $in: [keyword] } },
+                { category: { $regex: keyword, $options: 'i' } }  // <-- Added category to keyword search
+            ];
+        }
+
+
+        if (category) {
+            query.category = category;
+        }
+
+        const blogs = await Blog.find(query).sort({ createdAt: -1 });
         
         res.status(200).json({
             success: true,
@@ -80,9 +98,9 @@ export const getBlog = async (req, res) => {
 // Update blog
 export const updateBlog = async (req, res) => {
     try {
-        const { title, description, image } = req.body;
+        const { title, description, image, keywords, category } = req.body;
         const updateData = { description, image };
-        
+
         if (title) {
             let slug = slugify(title, { lower: true, strict: true });
             // Check for duplicate slug, excluding the current blog
@@ -93,6 +111,10 @@ export const updateBlog = async (req, res) => {
             updateData.title = title;
             updateData.slug = slug;
         }
+
+        // Update keywords and category if provided
+        if (keywords) updateData.keywords = keywords;
+        if (category) updateData.category = category;
 
         const blog = await Blog.findByIdAndUpdate(
             req.params.id,

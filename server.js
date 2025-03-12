@@ -15,6 +15,7 @@ import locationRoutes from './routes/locationRoutes.js';
 import connectDB from './config/db.js';
 import dealRoutes from './routes/dealRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import metaRoutes from './routes/metaRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -62,6 +63,8 @@ app.use('/api/enquiries', enquieryFormRoute);
 app.use('/api/locations', locationRoutes);
 app.use('/api/deals', dealRoutes);
 app.use('/api/blogs', blogRoutes);
+app.use('/api/meta', metaRoutes);
+
 
 
 app.use(express.static(path.join(__dirname, 'build')));

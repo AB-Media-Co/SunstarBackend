@@ -8,11 +8,19 @@ const adminSchema = new mongoose.Schema(
     phone: { type: String, required: true, unique: true },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, required: true, enum: ['admin', 'editor', 'viewer'], default: 'admin' },
+    role: {
+      type: String,
+      required: true,
+      enum: ['superadmin', 'admin', 'manager', 'contentManager', 'cityManager', 'hotelManager', 'digitalMarketer'],
+      default: 'admin',
+    },
     gender: { type: String, required: true, enum: ['male', 'female', 'other'] },
     age: { type: Number, required: true },
+    allowedCities: [{ type: String }], // For City Managers
+    allowedHotels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hotel' }], // For Hotel Managers
+    isSuperAdmin: { type: Boolean, default: false }, // Flag for single SuperAdmin
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true }
 );
 
 // Hash password before saving

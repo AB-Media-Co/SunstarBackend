@@ -1,20 +1,20 @@
 import mongoose from 'mongoose';
 
+// Sub-schemas
 const LocationDetailSchema = new mongoose.Schema({
   name: { type: String, required: true },
 }, { _id: false });
 
 const ImageSectionSchema = new mongoose.Schema({
   heading: { type: String, required: true, trim: true },
-  images: { type: [String], default: [] }
+  images: { type: [String], default: [] },
 }, { _id: false });
 
 const FAQSchema = new mongoose.Schema({
   question: { type: String, required: true, trim: true },
-  answer: { type: String, required: true, trim: true }
+  answer: { type: String, required: true, trim: true },
 }, { _id: false });
 
-// Schema for "Add To Your Stay" section
 const AddToYourStaySchema = new mongoose.Schema({
   heading: { type: String, required: true, trim: true },
   description: { type: String, required: true, trim: true },
@@ -24,9 +24,9 @@ const AddToYourStaySchema = new mongoose.Schema({
       type: String,
       required: true,
       trim: true,
-      enum: ['per night', 'per day',''] 
-    }
-  }
+      enum: ['per night', 'per day', '']
+    },
+  },
 });
 
 const ContinentalPlanSchema = new mongoose.Schema({
@@ -36,9 +36,23 @@ const ContinentalPlanSchema = new mongoose.Schema({
       type: String,
       required: true,
       trim: true,
-      enum: ['per person', 'per breakfast']
-    }
-  }
+      enum: ['per person', 'per breakfast'],
+    },
+  },
+}, { _id: false });
+
+// Define AmenitySchema
+const AmenitySchema = new mongoose.Schema({
+  label: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  value: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 }, { _id: false });
 
 const HotelSchema = new mongoose.Schema({
@@ -47,7 +61,7 @@ const HotelSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true },
   aboutUs: {
     description: { type: String },
-    img: { type: String }
+    img: { type: String },
   },
   checkOut: { type: String },
   checkIn: { type: String },
@@ -59,27 +73,18 @@ const HotelSchema = new mongoose.Schema({
     attractions: [LocationDetailSchema],
     restaurants: [LocationDetailSchema],
     activities: [LocationDetailSchema],
-    nightlife: [LocationDetailSchema]
+    nightlife: [LocationDetailSchema],
   },
-  // Changed cityLocation from String to ObjectId with ref to 'Location'
   cityLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
   amenities: {
-    value: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    label: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    type: [AmenitySchema],
+    default: [],
   },
   rating: { type: Number, min: 0, max: 5 },
   images: { type: [String], default: [] },
   imageSections: {
     sections: { type: [ImageSectionSchema], default: [] },
-    carouselImages: { type: [String], default: [] }
+    carouselImages: { type: [String], default: [] },
   },
   price: { type: Number, required: true, min: [0, 'Price must be a positive number'] },
   discountedPrice: { type: Number, min: [0, 'Discounted price must be a positive number'] },
@@ -87,39 +92,20 @@ const HotelSchema = new mongoose.Schema({
   testimonials: {
     type: [
       {
-        name: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        location: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        description: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        heading: {
-          type: String,
-          required: true,
-          trim: true,
-        }
-      }
+        name: { type: String, required: true, trim: true },
+        location: { type: String, required: true, trim: true },
+        description: { type: String, required: true, trim: true },
+        heading: { type: String, required: true, trim: true },
+      },
     ],
-    default: []
+    default: [],
   },
-  faqs: {
-    type: [FAQSchema],
-    default: []
-  },
+  faqs: { type: [FAQSchema], default: [] },
   hotelCode: { type: Number, required: true },
   authKey: { type: String, required: true },
   addToYourStay: { type: [AddToYourStaySchema] },
   continentalPlan: { type: ContinentalPlanSchema },
-  payAtHotel: { type: String }
+  payAtHotel: { type: String },
 });
 
 export default mongoose.model('Hotel', HotelSchema);

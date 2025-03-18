@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import axios from 'axios'; // Import axios to make external requests
 import adminRoutes from './routes/adminRoutes.js';
 import hotelRoutes from './routes/ImageUpload.js';
 import instagramRoutes from './routes/instagramRoutes.js'; 
@@ -29,7 +30,7 @@ app.use((req, res, next) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
+// Connect to the database
 (async () => {
   try {
     await connectDB();
@@ -40,6 +41,7 @@ const __dirname = path.dirname(__filename);
   }
 })();
 
+// Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -53,6 +55,24 @@ app.use(
   })
 );
 
+// Booking Proxy Route
+app.post('/api/booking', async (req, res) => {
+  const { roomData, hotelDetail } = req.body; // Extract data from the request body
+
+  // Define the API URL for the external booking service
+  const apiUrl = `https://live.ipms247.com/booking/reservation_api/listing.php?request_type=InsertBooking&HotelCode=${hotelDetail?.hotelCode}&APIKey=${hotelDetail?.authKey}&BookingData=${encodeURIComponent(JSON.stringify(roomData))}`;
+
+  try {
+    // Make the API request to the external service
+    const response = await axios.get(apiUrl);
+    res.json(response.data); // Send the external API response to the frontend
+  } catch (error) {
+    console.error('Error making booking request:', error);
+    res.status(500).json({ message: 'Failed to make booking. Please try again.' });
+  }
+});
+
+// Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/images', hotelRoutes);
 app.use('/api/instagram', instagramRoutes);
@@ -65,15 +85,15 @@ app.use('/api/deals', dealRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/meta', metaRoutes);
 
-
-
+// Serve static files
 app.use(express.static(path.join(__dirname, 'build')));
 
+// Catch-all for React routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-
+// Server setup
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

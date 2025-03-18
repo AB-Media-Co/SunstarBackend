@@ -48,7 +48,6 @@ export const getSingleHotel = async (req, res) => {
 export const getAllHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find().populate('cityLocation');
-    // Convert times for each hotel if available
     const modifiedHotels = hotels.map(hotel => {
       const h = hotel.toObject();
       if (h.checkIn) {

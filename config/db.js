@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { dropUnwantedIndexes } from './dropIndexes.js';
+// import { dropUnwantedIndexes } from './dropIndexes.js';
 
 const connectDB = async () => {
   try {
@@ -9,7 +9,7 @@ const connectDB = async () => {
     });
     console.log("MongoDB connected");
 
-    await dropUnwantedIndexes();
+    // await dropUnwantedIndexes();
     
   } catch (error) {
     console.log("MongoDB connection error:", error);

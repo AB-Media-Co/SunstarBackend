@@ -10,6 +10,7 @@ const RoomSchema = new mongoose.Schema({
   FromDate: { type: String },
   ToDate: { type: String },
   source: { type: String },
+  Availability: { type: Number, required: true, default: 0 }, // Changed to Number
   AboutRoom: {
     description: { type: String },
     img: { type: String },
@@ -18,15 +19,17 @@ const RoomSchema = new mongoose.Schema({
     value: { type: String, required: true, trim: true },
     label: { type: String, required: true, trim: true },
   }],
-  defaultRate: { type: Number },
-  discountRate: { type: Number },
-  maxGuests: { type: Number },
-  squareFeet: { type: Number },
-  available: { type: Boolean },
+  defaultRate: { type: Number, min: 0 },
+  discountRate: { type: Number, min: 0 },
+  maxGuests: { type: Number, min: 1 }, // Ensure positive numbers
+  squareFeet: { type: Number, min: 0 },
+  show: { type: Boolean, default: false },
 }, {
   indexes: [
-    { key: { RoomTypeID: 1, RateTypeID: 1 } } // Non-unique index for faster queries
+    { key: { RoomTypeID: 1, RateTypeID: 1 }, unique: true }, // Enforced unique combination
+    { key: { HotelCode: 1 } }, // Index for HotelCode if frequently queried
   ]
 });
+
 
 export default mongoose.model('Room', RoomSchema);

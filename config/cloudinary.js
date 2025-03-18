@@ -2,6 +2,8 @@ import cloudinary from 'cloudinary';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import asyncHandler from 'express-async-handler';
+import sharp from 'sharp';
+import compression from 'compression';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -28,6 +30,8 @@ const upload = multer({
   limits: { fileSize: 1024 * 1024 * 10 }, // 20MB limit per file
 }).array('images', 10); // Accept up to 10 files
 export const uploadImages = asyncHandler(async (req, res) => {
+  compression()(req, res, () => {});
+  
   upload(req, res, async (err) => {
     if (err) {
       console.error('Multer error:', err);
@@ -35,10 +39,22 @@ export const uploadImages = asyncHandler(async (req, res) => {
     }
 
     try {
-      const imageUploadPromises = req.files.map((file) => {
+      const imageUploadPromises = req.files.map(async (file) => {
+        // Optimize image before upload
+        const optimizedBuffer = await sharp(file.buffer)
+          .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 80, progressive: true })
+          .toBuffer();
+
         return new Promise((resolve, reject) => {
           const uploadStream = cloudinary.v2.uploader.upload_stream(
-            { folder: 'hotel_images' },
+            { 
+              folder: 'hotel_images',
+              resource_type: 'auto',
+              format: 'jpg',
+              quality: 'auto:good',
+              fetch_format: 'auto',
+            },
             (error, result) => {
               if (error) {
                 console.error('Cloudinary upload error:', error);
@@ -48,11 +64,17 @@ export const uploadImages = asyncHandler(async (req, res) => {
               }
             }
           );
-          uploadStream.end(file.buffer);
+          uploadStream.end(optimizedBuffer);
         });
       });
 
       const imageUrls = await Promise.all(imageUploadPromises);
+
+      // Set cache headers
+      res.set({
+        'Cache-Control': 'public, max-age=31536000',
+        'Expires': new Date(Date.now() + 31536000000).toUTCString()
+      });
 
       res.status(201).json({
         success: true,

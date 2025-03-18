@@ -12,7 +12,9 @@ export const sendOtp = async (req, res) => {
     const verification = await client.verify.services(serviceSid)
       .verifications
       .create({ to: phone, channel: 'sms' });
-      
+    
+    console.log("OTP Sent Response:", verification); // Add this for debugging
+
     res.json({ message: 'OTP sent successfully', status: verification.status });
   } catch (error) {
     console.error('Error sending OTP:', error);
@@ -30,7 +32,9 @@ export const verifyOtp = async (req, res) => {
     const verificationCheck = await client.verify.services(serviceSid)
       .verificationChecks
       .create({ to: phone, code });
-    
+
+    console.log("Verification Check Response:", verificationCheck); // Add this for debugging
+
     if (verificationCheck.status === 'approved') {
       let user = await User.findOne({ phone });
       if (!user) {

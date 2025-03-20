@@ -55,22 +55,53 @@ app.use(
   })
 );
 
-// Booking Proxy Route
 app.post('/api/booking', async (req, res) => {
-  const { roomData, hotelDetail } = req.body; // Extract data from the request body
-
-  // Define the API URL for the external booking service
-  const apiUrl = `https://live.ipms247.com/booking/reservation_api/listing.php?request_type=InsertBooking&HotelCode=${hotelDetail?.hotelCode}&APIKey=${hotelDetail?.authKey}&BookingData=${encodeURIComponent(JSON.stringify(roomData))}`;
+  const { roomData, hotelDetail } = req.body;
+  
+  // Validate required fields
+  if (!hotelDetail?.hotelCode || !hotelDetail?.authKey) {
+    return res.status(400).json({ message: 'Missing hotel details' });
+  }
+  
+  // Validate essential booking data
+  if (!roomData?.Room_Details || !roomData?.check_in_date || !roomData?.check_out_date || !roomData?.Email_Address) {
+    return res.status(400).json({ message: 'Missing required booking information' });
+  }
 
   try {
-    // Make the API request to the external service
-    const response = await axios.get(apiUrl);
-    res.json(response.data); // Send the external API response to the frontend
+    const apiUrl = `https://live.ipms247.com/booking/reservation_api/listing.php`;
+    const params = {
+      request_type: 'InsertBooking',
+      HotelCode: hotelDetail.hotelCode,
+      APIKey: hotelDetail.authKey,
+      BookingData: JSON.stringify(roomData)
+    };
+    
+    // Make the API request to the external service using proper URL encoding
+    const response = await axios.get(apiUrl, { params });
+    
+    // Handle eZee API error responses
+    if (response.data && response.data.ReservationNo) {
+      res.json(response.data);
+    } else {
+      // Handle error response from eZee API
+      console.error('eZee API error:', response.data);
+      res.status(400).json({ 
+        message: 'Booking failed',
+        error: response.data
+      });
+    }
   } catch (error) {
     console.error('Error making booking request:', error);
-    res.status(500).json({ message: 'Failed to make booking. Please try again.' });
+    
+    // Return a more detailed error message
+    res.status(500).json({ 
+      message: 'Failed to make booking. Please try again.',
+      error: error.response?.data || error.message
+    });
   }
 });
+
 
 // Routes
 app.use('/api/admin', adminRoutes);

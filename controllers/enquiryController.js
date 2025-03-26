@@ -35,7 +35,7 @@ export const submitEnquiry = async (req, res) => {
     }
 
     // Google Sheets ke liye data prepare karte hain
-    const spreadsheetId = '1LToDgMZmJO_gcp2LrUj3nD1BDfrVYRb9skuQyxV5ipQ';
+    const spreadsheetId = process.env.SPREADSHEET_ID;
     // Split submittedAt into date and time
     const submittedDate = newEnquiry.submittedAt.toLocaleDateString('en-IN');
     const submittedTime = newEnquiry.submittedAt.toLocaleTimeString('en-IN');
@@ -102,7 +102,7 @@ export const submitHotelData = async (req, res) => {
     ]);
 
     // Google Sheets configuration
-    const spreadsheetId = '1LToDgMZmJO_gcp2LrUj3nD1BDfrVYRb9skuQyxV5ipQ';
+    const spreadsheetId = process.env.SPREADSHEET_ID;
     const targetGid = 1645243460;
 
     // Fetch the spreadsheet metadata to retrieve sheet titles

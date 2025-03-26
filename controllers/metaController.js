@@ -20,7 +20,7 @@ export const createMeta = async (req, res) => {
 // Get all meta records
 export const getAllMeta = async (req, res) => {
   try {
-    const metas = await metamodel.find();
+    const metas = await SeoMetaModel.find();
     return res.json(metas);
   } catch (error) {
     return res.status(500).json({ message: error.message });

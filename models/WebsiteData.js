@@ -62,10 +62,10 @@ const HeroSectionSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-    },
-    image: {
-      type: String
     }
+    // image: {
+    //   type: String
+    // }
   }
 );
 const HomePageDescriptionsSchema = new Schema(

@@ -1,8 +1,9 @@
 import express from "express";
-import { submitEnquiry } from "../controllers/enquiryController.js";
+import { submitEnquiry, submitHotelData } from "../controllers/enquiryController.js";
 
 const router = express.Router();
 
 router.post("/", submitEnquiry);
+router.post("/hotelData", submitHotelData);
 
 export default router;

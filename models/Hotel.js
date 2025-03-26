@@ -56,6 +56,7 @@ const AmenitySchema = new mongoose.Schema({
 }, { _id: false });
 
 const HotelSchema = new mongoose.Schema({
+  active: { type: Boolean, default: false },
   name: { type: String, required: true },
   description: { type: String, required: true },
   phoneNumber: { type: String, required: true },

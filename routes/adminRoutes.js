@@ -8,6 +8,7 @@ import {
   deleteProfile,
   updateAnyProfile,
   deleteAnyProfile,
+  changePassword,
 } from '../controllers/adminController.js';
 import { protect, restrictToRole } from '../middleware/authMiddleware.js';
 
@@ -21,6 +22,8 @@ router.post('/register', protect, restrictToRole(['superadmin']), registerAdmin)
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.delete('/profile', protect, deleteProfile);
+router.post('/change-password', protect, changePassword);
+
 
 // Admin-only routes for managing all profiles
 router.get('/profiles', protect, restrictToRole(['superadmin', 'admin']), getAllProfiles);

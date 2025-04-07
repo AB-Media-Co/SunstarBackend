@@ -9,6 +9,7 @@ const getTomorrow = () => new Date(Date.now() + 86400000).toISOString().split('T
 export const getSyncedRooms = async (req, res) => {
   try {
     const { hotelCode, authCode, fromDate, toDate } = req.query;
+    console.log(hotelCode, authCode, fromDate, toDate)
     if (!hotelCode || !authCode) {
       return res.status(400).json({ error: 'hotelCode and authCode are required as query parameters' });
     }
@@ -35,6 +36,8 @@ export const getSyncedRooms = async (req, res) => {
       rateXmlPayload,
       { headers: { 'Content-Type': 'application/xml' } }
     );
+
+    console.log(rateResponse.data)
 
     const parser = new xml2js.Parser({ explicitArray: false });
     const parsedRateResult = await parser.parseStringPromise(rateResponse.data);

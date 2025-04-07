@@ -44,17 +44,51 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(express.json());
-app.use(
-  cors({
-    credentials: true,
-    origin: [
-      'http://localhost:5173', 
-      'https://live.ipms247.com',
-      'https://sunstarhospitality.com/',
-      'https://sunstarbackend.onrender.com'
-    ],
-  })
-);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      message: 'Validation Error',
+      errors: Object.values(err.errors).map(e => e.message)
+    });
+  }
+
+  if (err.name === 'MongoError' || err.name === 'MongoServerError') {
+    return res.status(500).json({
+      message: 'Database Error',
+      error: err.message
+    });
+  }
+
+  res.status(500).json({
+    message: 'Internal Server Error',
+    error: err.message
+  });
+});
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     const allowedOrigins = [
+//       'http://localhost:5173',
+//       'https://live.ipms247.com',
+//       'https://sunstarhospitality.com',
+//       'https://sunstarbackend.onrender.com'
+//     ];
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true
+// }));
+
+app.use(cors({
+  origin: '*'
+}));
+
 
 app.post('/api/booking', async (req, res) => {
   const { roomData, hotelDetail } = req.body;

@@ -10,12 +10,19 @@ const getOrCreateWebsiteData = async () => {
   return websiteData;
 };
 
-export const getWebsiteData = async (req, res) => {
+export const getWebsiteData = async (req, res, next) => {
   try {
     const websiteData = await getOrCreateWebsiteData();
+    if (!websiteData) {
+      return res.status(404).json({ message: 'Website data not found' });
+    }
     res.json(websiteData);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err.name === 'MongooseError' || err.name === 'MongoError') {
+      console.error('Database Error:', err);
+      return res.status(500).json({ message: 'Database connection error', error: err.message });
+    }
+    next(err);
   }
 };
 

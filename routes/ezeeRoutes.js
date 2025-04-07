@@ -21,7 +21,7 @@ router.get('/syncedRooms', getSyncedRooms);
 router.post('/rooms', createRoom);
 router.get('/room/:id', getRoomById);
 router.delete('/room/:id', deleteRoomById);
-router.put('/rooms/:id', updateRoom);      // For updating an existing room
+router.put('/rooms/:id', updateRoom);      
 
 
 

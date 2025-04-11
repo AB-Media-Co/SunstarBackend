@@ -18,19 +18,20 @@ const sheets = google.sheets({ version: "v4", auth });
 
 export const submitEnquiry = async (req, res) => {
   try {
+    console.log("Incoming request body:", req.body);
+
     const enquiryData = req.body;
-    // MongoDB mein enquiry save karte hain
     const newEnquiry = await Enquiry.create(enquiryData);
 
-    // Frontend se gid lene ke liye:
-    // Expect kar rahe hain ki req.body.gid mein ya to ek single number ya multiple gid ke array ho.
+    console.log("Enquiry saved to DB:", newEnquiry);
+
+
     let sheetGIDs = [];
     if (enquiryData.gid) {
       sheetGIDs = Array.isArray(enquiryData.gid)
         ? enquiryData.gid
         : [enquiryData.gid];
     } else {
-      // Agar gid na diya ho to default gid 0 set kar sakte hain.
       sheetGIDs = [0];
     }
 

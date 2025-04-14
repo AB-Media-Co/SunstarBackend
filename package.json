@@ -21,6 +21,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-async-handler": "^1.2.0",
+    "express-openid-connect": "^2.18.0",
     "firebase-admin": "^13.2.0",
     "googleapis": "^144.0.0",
     "instagram-private-api": "^1.46.1",

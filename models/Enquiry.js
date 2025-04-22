@@ -12,5 +12,23 @@ const enquirySchema = new Schema({
   submittedAt: { type: Date, default: Date.now },
 });
 
-const Enquiry = mongoose.model("Enquiry", enquirySchema);
-export default Enquiry;
+
+const BookingSchema = new mongoose.Schema({
+  hotelCode: String,
+  Hoteldata: String,
+  checkIn: Date,
+  checkOut: Date,
+  roomName: String,
+  option: String,
+  price: Number,
+  RoomTypeID: String,
+  RateTypeID: String,
+  userEmail: String,
+  userPhone: String,
+  submittedAt: Date,
+});
+
+
+export const Enquiry = mongoose.model("Enquiry", enquirySchema);
+export const Bookings = mongoose.model("Allbookings", BookingSchema);
+

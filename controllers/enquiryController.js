@@ -43,10 +43,12 @@ export const submitEnquiry = async (req, res) => {
 
     const values = [[
       enquiryData.page,
-      enquiryData.companyName,
+      enquiryData.name,
       enquiryData.email,
       enquiryData.phone,
+      enquiryData.companyName,
       enquiryData.enquiry,
+      enquiryData.date,
       submittedDate,
       submittedTime,
       enquiryData.address,
@@ -83,61 +85,6 @@ export const submitEnquiry = async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
-
-
-
-// export const submitHotelData = async (req, res) => {
-//   try {
-//     const bookingData = req.body;
-//     // Prepare rows: one row per selected room
-//     const rows = bookingData.selectedRooms.map(room => [
-//       bookingData.hotelCode,
-//       bookingData.Hoteldata,
-//       bookingData.checkIn,
-//       bookingData.checkOut,
-//       room.roomName,
-//       room.option,
-//       room.price,
-//       room.RoomTypeID,
-//       room.RateTypeID,
-//     ]);
-
-//     // Google Sheets configuration
-//     const spreadsheetId = process.env.SPREADSHEET_ID;
-//     const targetGid = 1645243460;
-
-//     // Fetch the spreadsheet metadata to retrieve sheet titles
-//     const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-//     const sheetsMetadata = spreadsheet.data.sheets;
-    
-//     // Find the sheet with the given gid
-//     const sheetMeta = sheetsMetadata.find(
-//       (sheet) => sheet.properties.sheetId === Number(targetGid)
-//     );
-//     if (!sheetMeta) {
-//       console.warn(`Sheet with gid ${targetGid} not found`);
-//       return res.status(400).json({ message: `Sheet with gid ${targetGid} not found` });
-//     }
-    
-//     const sheetTitle = sheetMeta.properties.title;
-//     // Define a range that covers 9 columns (A to I) as we have 9 fields
-//     const range = `${sheetTitle}!A:I`;
-
-//     // Append the prepared rows to the target sheet
-//     await sheets.spreadsheets.values.append({
-//       spreadsheetId,
-//       range,
-//       valueInputOption: "USER_ENTERED",
-//       requestBody: { values: rows },
-//     });
-
-//     res.status(200).json({ message: "Hotel data submitted successfully!" });
-//   } catch (error) {
-//     console.error("Error in submitHotelData:", error);
-//     res.status(500).json({ message: "Server error. Please try again later." });
-//   }
-// };
-
 
 
 export const submitHotelData = async (req, res) => {
@@ -221,9 +168,6 @@ export const submitHotelData = async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
-
-
-
 
 export const getUserHotelBookings = async (req, res) => {
   try {

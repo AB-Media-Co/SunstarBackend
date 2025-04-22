@@ -32,12 +32,26 @@ const blogSchema = new mongoose.Schema({
         required: [true, 'Category is required'],
         trim: true,
         enum: [
-            "Leisure Travel", 
-            "Weekend Getaway", 
-            "Near By Attractions", 
-            "Travel Tips", 
-            "Nightlife", 
-            "Shopping"
+            "Hospitality",
+            "First-Time Visitors",
+            "Location & Access",
+            "Hotel Features",
+            "Travel Tips",
+            "Nearby Tours",
+            "Shopping",
+            "Wellness",
+            "Guest Stories",
+            "Dining",
+            "Tourism & Culture",
+            "Day Trips",
+            "Events & Festivities",
+            "International Travel",
+            "Local Life",
+            "Behind the Scenes",
+            "Luxury on Budget",
+            "Sustainability",
+            "Travel Essentials",
+            "Scam Awareness"
         ]
     },
     createdAt: {

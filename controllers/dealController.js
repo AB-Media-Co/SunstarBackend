@@ -62,18 +62,17 @@ function isDealEligible(deal, bookingDate, checkInDate) {
     };
     const checkInDay = checkInDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const allowedDays = deal.daysOfWeek.map(d => dayMap[d]);
-    
+
     if (!allowedDays.includes(checkInDay)) {
       return false;
     }
   }
 
   // 6. Check platform restrictions
-  if (deal.platform === 'mobileOnly' && req.headers['user-agent'] && 
-      !req.headers['user-agent'].toLowerCase().includes('mobile')) {
+  if (deal.platform === 'mobileOnly' && req && req.headers['user-agent'] &&
+    !req.headers['user-agent'].toLowerCase().includes('mobile')) {
     return false;
   }
-
   return true;
 }
 
@@ -226,12 +225,12 @@ export const getDiscountedRate = async (req, res) => {
       }
 
       // Check if the deal is active
-      if (applicableDeal.startDate && bookingDate < applicableDeal.startDate) {
+      if (applicableDeal.startDate && bookingDate <= applicableDeal.startDate) {
         return res
           .status(400)
           .json({ error: 'Offer code is not active yet' });
       }
-      if (applicableDeal.endDate && bookingDate > applicableDeal.endDate) {
+      if (applicableDeal.endDate && bookingDate >= applicableDeal.endDate) {
         return res
           .status(400)
           .json({ error: 'Offer code has expired' });
@@ -249,20 +248,20 @@ export const getDiscountedRate = async (req, res) => {
       if (!isDealEligible(applicableDeal, bookingDate, checkInDateObj, requestWithUserAgent)) {
         // Determine the exact reason for ineligibility
         let errorMessage = 'Offer code is not eligible based on date restrictions';
-        
-        if (applicableDeal.dealType === 'lastMinute' && 
-            applicableDeal.maxAdvance > 0 && 
-            getDaysDifference(bookingDate, checkInDateObj) > applicableDeal.maxAdvance) {
+
+        if (applicableDeal.dealType === 'lastMinute' &&
+          applicableDeal.maxAdvance > 0 &&
+          getDaysDifference(bookingDate, checkInDateObj) > applicableDeal.maxAdvance) {
           errorMessage = `This last-minute offer is only valid for bookings ${applicableDeal.maxAdvance} ${applicableDeal.bookingRestrictionUnit} or fewer before check-in`;
-        } else if (applicableDeal.dealType === 'earlyBooker' && 
-                   applicableDeal.minAdvance > 0 && 
-                   getDaysDifference(bookingDate, checkInDateObj) < applicableDeal.minAdvance) {
+        } else if (applicableDeal.dealType === 'earlyBooker' &&
+          applicableDeal.minAdvance > 0 &&
+          getDaysDifference(bookingDate, checkInDateObj) < applicableDeal.minAdvance) {
           errorMessage = `This early-booker offer is only valid for bookings ${applicableDeal.minAdvance} ${applicableDeal.bookingRestrictionUnit} or more before check-in`;
         } else if (applicableDeal.limitPromotionToHours) {
           const bookingHour = bookingDate.getHours();
           errorMessage = `This offer is only valid for bookings between ${applicableDeal.startHour}:00 and ${applicableDeal.endHour}:00`;
         }
-        
+
         return res.status(400).json({ error: errorMessage });
       }
     }

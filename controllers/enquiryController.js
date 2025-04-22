@@ -45,12 +45,12 @@ export const submitEnquiry = async (req, res) => {
       enquiryData.page,
       enquiryData.companyName,
       enquiryData.email,
-      enquiryData.address,
-      enquiryData.decisionMaker,
       enquiryData.phone,
       enquiryData.enquiry,
       submittedDate,
       submittedTime,
+      enquiryData.address,
+      enquiryData.decisionMaker,
     ]];
 
     // Spreadsheet metadata se sheet titles nikalne ke liye

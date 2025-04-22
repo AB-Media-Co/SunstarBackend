@@ -107,6 +107,7 @@ const HotelSchema = new mongoose.Schema({
   addToYourStay: { type: [AddToYourStaySchema] },
   continentalPlan: { type: ContinentalPlanSchema },
   payAtHotel: { type: String },
+  isDayUseRoom: { type: Boolean, default: false },
 });
 
 export default mongoose.model('Hotel', HotelSchema);

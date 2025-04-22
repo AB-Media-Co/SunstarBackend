@@ -18,6 +18,9 @@ import dealRoutes from './routes/dealRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import metaRoutes from './routes/metaRoutes.js';
 import createBooking from './routes/createBookingRoute.js';
+import dayUseRoomRoutes from './routes/dayUseRoomRoutes.js';
+import faqRoutes from './routes/faqRoutes.js';
+
 
 dotenv.config();
 const app = express();
@@ -89,6 +92,9 @@ app.use(cors({
   origin: '*'
 }));
 
+// Day Use Room Routes
+app.use('/api', dayUseRoomRoutes);
+
 
 app.post('/api/booking', async (req, res) => {
   const { roomData, hotelDetail } = req.body;
@@ -151,6 +157,8 @@ app.use('/api/deals', dealRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/meta', metaRoutes);
 app.use('/api/newBooking', createBooking);
+app.use('/api/faqs', faqRoutes);
+
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));

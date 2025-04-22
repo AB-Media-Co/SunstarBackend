@@ -31,7 +31,6 @@ const dealSchema = new mongoose.Schema(
       default: 'mobileAndWeb'
     },
 
-    // --- NEW FIELDS for Last Minute & Early Booker logic ---
     dealType: {
       type: String,
       enum: ['lastMinute', 'earlyBooker', 'standard'],

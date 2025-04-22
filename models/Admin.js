@@ -1,23 +1,24 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { PASSWORD_REGEX, PHONE_REGEX, ROLE_ENUM } from '../constants/validationConstants.js';
 
+// Define the admin schema
 const adminSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    phone: { type: String, required: true, unique: true },
+    phone: { type: String, required: true, unique: true, match: PHONE_REGEX },
     username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true, select: false },
     role: {
       type: String,
       required: true,
-      enum: ['superadmin', 'admin', 'manager', 'contentManager', 'cityManager', 'hotelManager', 'digitalMarketer'],
+      enum: ROLE_ENUM,
       default: 'admin',
     },
     gender: { type: String, required: true, enum: ['male', 'female', 'other'] },
     age: { type: Number, required: true },
     allowedCities: [{ type: String }],
     allowedHotels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hotel' }],
-    isSuperAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -28,15 +29,17 @@ adminSchema.set('toJSON', {
     delete ret.password;
     delete ret.__v;
     return ret;
-  }
+  },
 });
 
-// Pre-save hook to hash password with proper error handling
+// Pre-save hook to hash password
 adminSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    console.log('Hashed Password:', this.password); // 👈 Add this line
+
     next();
   } catch (err) {
     next(err);
@@ -44,10 +47,14 @@ adminSchema.pre('save', async function (next) {
 });
 
 // Method to compare entered password with hashed password
-adminSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+adminSchema.methods.matchPassword = function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
 };
+
+
 
 const Admin = mongoose.model('Admin', adminSchema);
 
 export default Admin;
+
+//

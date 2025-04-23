@@ -40,6 +40,8 @@ export const submitEnquiry = async (req, res) => {
     // Split submittedAt into date and time
     const submittedDate = newEnquiry.submittedAt.toLocaleDateString('en-IN');
     const submittedTime = newEnquiry.submittedAt.toLocaleTimeString('en-IN');
+    const dateToUse = enquiryData.date || submittedDate;
+
 
     const values = [[
       enquiryData.page,
@@ -48,8 +50,7 @@ export const submitEnquiry = async (req, res) => {
       enquiryData.phone,
       enquiryData.companyName,
       enquiryData.enquiry,
-      enquiryData.date,
-      submittedDate,
+      dateToUse,
       submittedTime,
       enquiryData.address,
       enquiryData.decisionMaker,

@@ -4,10 +4,10 @@ import { addFAQ, updateFAQ, deleteFAQ, getFAQsByPage, addMultipleFAQs } from '..
 
 const router = express.Router();
 
-router.post('/add', addFAQ);  // Add new FAQ
-router.post('/add-multiple', addMultipleFAQs);  // Add new FAQ
-router.put('/update/:id', updateFAQ);  // Update FAQ by ID
-router.delete('/delete/:id', deleteFAQ);  // Delete FAQ by ID
-router.get('/:page', getFAQsByPage);  // Get FAQs by page
+router.post('/add', addFAQ); 
+router.post('/add-multiple', addMultipleFAQs); 
+router.put('/update/:id', updateFAQ);
+router.delete('/delete/:id', deleteFAQ);  
+router.get('/:page', getFAQsByPage);  
 
 export default router;

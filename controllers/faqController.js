@@ -1,9 +1,6 @@
 // /controllers/faqController.js
 import FAQ from '../models/faqModel.js';
 
-
-
-
 export const addMultipleFAQs = async (req, res) => {
     try {
       const faqs = req.body;

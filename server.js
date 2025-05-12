@@ -43,8 +43,11 @@ const app = express();
 //   origin: '*'
 // }));
 
-app.use(cors());
-app.options('*', cors());
+app.use(cors({
+  origin: '*', // Allows all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+}));
 // Middleware
 app.use(express.json());
 

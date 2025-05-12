@@ -23,7 +23,34 @@ import faqRoutes from './routes/faqRoutes.js';
 
 
 dotenv.config();
+
 const app = express();
+
+// app.use(cors({
+//   origin :[
+//     'http://localhost:5173',
+//     'https://live.ipms247.com',
+//     'https://sunstarhospitality.com',
+//     'https://sunstarbackend.onrender.com'
+//   ],
+//   credentials: true
+// }));
+app.use(cors({
+  origin: [
+    'https://sunstarhospitality.com',
+    'https://www.sunstarhospitality.com',
+    'http://localhost:5173',
+    'https://live.ipms247.com',
+    'https://sunstarbackend.onrender.com'
+  ],
+  credentials: true
+}));
+
+// app.use(cors({
+//   origin: '*'
+// }));
+
+
 app.set('etag', false);
 
 app.use((req, res, next) => {
@@ -71,27 +98,10 @@ app.use((err, req, res, next) => {
     error: err.message
   });
 });
-// app.use(cors({
-//   origin :[
-//     'http://localhost:5173',
-//     'https://live.ipms247.com',
-//     'https://sunstarhospitality.com',
-//     'https://sunstarbackend.onrender.com'
-//   ],
-//   credentials: true
-// }));
-
-// app.use(cors({
-//   origin: '*'
-// }));
 
 
 
-app.use(cors({
-  origin: '*', // Allow all origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+
 
 // Day Use Room Routes
 app.use('/api', dayUseRoomRoutes);

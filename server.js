@@ -71,19 +71,42 @@ app.use((err, req, res, next) => {
     error: err.message
   });
 });
-app.use(cors({
-  origin :[
-    'http://localhost:5173',
-    'https://live.ipms247.com',
-    'https://sunstarhospitality.com',
-    'https://sunstarbackend.onrender.com'
-  ],
-  credentials: true
-}));
+// app.use(cors({
+//   origin :[
+//     'http://localhost:5173',
+//     'https://live.ipms247.com',
+//     'https://sunstarhospitality.com',
+//     'https://sunstarbackend.onrender.com'
+//   ],
+//   credentials: true
+// }));
 
 // app.use(cors({
 //   origin: '*'
 // }));
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    const whitelist = [
+      'http://localhost:5173',
+      'https://live.ipms247.com',
+      'https://sunstarhospitality.com',
+      'https://sunstarbackend.onrender.com',
+      'https://www.sunstarhospitality.com/'
+    ];
+
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 // Day Use Room Routes
 app.use('/api', dayUseRoomRoutes);

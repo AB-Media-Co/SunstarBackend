@@ -85,37 +85,13 @@ app.use((err, req, res, next) => {
 //   origin: '*'
 // }));
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    const whitelist = [
-      'http://localhost:5173',
-      'https://live.ipms247.com',
-      'https://sunstarhospitality.com',
-      'https://sunstarbackend.onrender.com',
-      'https://www.sunstarhospitality.com'
-    ];
 
-    console.log('Incoming Origin:', origin); // Log the incoming origin
 
-    if (!origin || whitelist.some(allowed => 
-      origin.startsWith(allowed)
-    )) {
-      console.log('Origin Allowed:', origin); // Log allowed origins
-      callback(null, true);
-    } else {
-      console.log('Origin Blocked:', origin); // Log blocked origins
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+app.use(cors({
+  origin: '*', // Allow all origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-app.use(cors(corsOptions));
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Day Use Room Routes
 app.use('/api', dayUseRoomRoutes);

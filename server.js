@@ -36,11 +36,17 @@ const app = express();
 //   credentials: true
 // }));
 
-app.use(cors());
+
+
 
 // app.use(cors({
 //   origin: '*'
 // }));
+
+app.use(cors());
+app.options('*', cors());
+// Middleware
+app.use(express.json());
 
 
 app.set('etag', false);
@@ -64,8 +70,6 @@ const __dirname = path.dirname(__filename);
   }
 })();
 
-// Middleware
-app.use(express.json());
 
 // Error handling middleware
 app.use((err, req, res, next) => {

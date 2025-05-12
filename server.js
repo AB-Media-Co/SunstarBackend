@@ -35,16 +35,8 @@ const app = express();
 //   ],
 //   credentials: true
 // }));
-app.use(cors({
-  origin: [
-    'https://sunstarhospitality.com',
-    'https://www.sunstarhospitality.com',
-    'http://localhost:5173',
-    'https://live.ipms247.com',
-    'https://sunstarbackend.onrender.com'
-  ],
-  credentials: true
-}));
+
+app.use(cors());
 
 // app.use(cors({
 //   origin: '*'

@@ -7,12 +7,12 @@ import cors from 'cors';
 import axios from 'axios'; // Import axios to make external requests
 import adminRoutes from './routes/adminRoutes.js';
 import hotelRoutes from './routes/ImageUpload.js';
-import instagramRoutes from './routes/instagramRoutes.js'; 
-import ezeeRoutes from './routes/ezeeRoutes.js'; 
-import websiteDataRoutes from './routes/websiteDataRoutes.js'; 
-import paymentRoutes from './routes/paymentRoutes.js'; 
-import enquieryFormRoute from './routes/enquieryFormRoute.js'; 
-import locationRoutes from './routes/locationRoutes.js'; 
+import instagramRoutes from './routes/instagramRoutes.js';
+import ezeeRoutes from './routes/ezeeRoutes.js';
+import websiteDataRoutes from './routes/websiteDataRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import enquieryFormRoute from './routes/enquieryFormRoute.js';
+import locationRoutes from './routes/locationRoutes.js';
 import connectDB from './config/db.js';
 import dealRoutes from './routes/dealRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
@@ -72,19 +72,12 @@ app.use((err, req, res, next) => {
   });
 });
 app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'https://live.ipms247.com',
-      'https://sunstarhospitality.com',
-      'https://sunstarbackend.onrender.com'
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin :[
+    'http://localhost:5173',
+    'https://live.ipms247.com',
+    'https://sunstarhospitality.com',
+    'https://sunstarbackend.onrender.com'
+  ],
   credentials: true
 }));
 
@@ -98,12 +91,12 @@ app.use('/api', dayUseRoomRoutes);
 
 app.post('/api/booking', async (req, res) => {
   const { roomData, hotelDetail } = req.body;
-  
+
   // Validate required fields
   if (!hotelDetail?.hotelCode || !hotelDetail?.authKey) {
     return res.status(400).json({ message: 'Missing hotel details' });
   }
-  
+
   // Validate essential booking data
   if (!roomData?.Room_Details || !roomData?.check_in_date || !roomData?.check_out_date || !roomData?.Email_Address) {
     return res.status(400).json({ message: 'Missing required booking information' });
@@ -117,26 +110,26 @@ app.post('/api/booking', async (req, res) => {
       APIKey: hotelDetail.authKey,
       BookingData: JSON.stringify(roomData)
     };
-    
+
     // Make the API request to the external service using proper URL encoding
     const response = await axios.get(apiUrl, { params });
-    
+
     // Handle eZee API error responses
     if (response.data && response.data.ReservationNo) {
       res.json(response.data);
     } else {
       // Handle error response from eZee API
       console.error('eZee API error:', response.data);
-      res.status(400).json({ 
+      res.status(400).json({
         message: 'Booking failed',
         error: response.data
       });
     }
   } catch (error) {
     console.error('Error making booking request:', error);
-    
+
     // Return a more detailed error message
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to make booking. Please try again.',
       error: error.response?.data || error.message
     });

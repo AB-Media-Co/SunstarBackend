@@ -92,19 +92,28 @@ const corsOptions = {
       'https://live.ipms247.com',
       'https://sunstarhospitality.com',
       'https://sunstarbackend.onrender.com',
-      'https://www.sunstarhospitality.com/'
+      'https://www.sunstarhospitality.com'
     ];
 
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    console.log('Incoming Origin:', origin); // Log the incoming origin
+
+    if (!origin || whitelist.some(allowed => 
+      origin.startsWith(allowed)
+    )) {
+      console.log('Origin Allowed:', origin); // Log allowed origins
       callback(null, true);
     } else {
+      console.log('Origin Blocked:', origin); // Log blocked origins
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
+  credentials: true,
+  optionsSuccessStatus: 200
 };
+
+app.use(cors(corsOptions));
 
 app.use(cors(corsOptions));
 

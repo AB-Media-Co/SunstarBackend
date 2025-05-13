@@ -49,10 +49,7 @@ app.use(cors({
     'https://sunstarhospitality.com',
     'https://www.sunstarhospitality.com', // Explicitly allow www
     'https://live.ipms247.com',
-    'https://sunstarbackend.onrender.com'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow all needed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow required headers
   credentials: true // If using cookies/auth headers
 }));
 

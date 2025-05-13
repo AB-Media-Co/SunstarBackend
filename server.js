@@ -26,18 +26,29 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://sunstarhospitality.com',
-    'https://www.sunstarhospitality.com',
-    'http://sunstarhospitality.com',
-    'http://www.sunstarhospitality.com'
-  ],
-  credentials: true,
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'https://sunstarhospitality.com',
+//     'https://www.sunstarhospitality.com',
+//     'http://sunstarhospitality.com',
+//     'http://www.sunstarhospitality.com'
+//   ],
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+
+const corsOptions = {
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+
 // app.use(cors({
 //   origin: '*',
 //   credentials: true

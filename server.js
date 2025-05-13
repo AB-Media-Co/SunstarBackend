@@ -26,31 +26,24 @@ dotenv.config();
 
 const app = express();
 
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://sunstarhospitality.com',
+    'https://www.sunstarhospitality.com',
+    'http://sunstarhospitality.com',
+    'http://www.sunstarhospitality.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 // app.use(cors({
-//   origin :[
-//     'http://localhost:5173',
-//     'https://live.ipms247.com',
-//     'https://sunstarhospitality.com',
-//     'https://sunstarbackend.onrender.com'
-//   ],
+//   origin: '*',
 //   credentials: true
 // }));
 
-app.use(cors({
-  origin: '*',
-  credentials: true
-}));
 
-
-// app.use(cors({
-//   origin: [
-//     'http://localhost:5173',
-//     'https://sunstarhospitality.com',
-//     'https://www.sunstarhospitality.com', // Explicitly allow www
-//     'https://live.ipms247.com',
-//   ],
-//   credentials: true // If using cookies/auth headers
-// }));
 
 // Middleware
 app.use(express.json());

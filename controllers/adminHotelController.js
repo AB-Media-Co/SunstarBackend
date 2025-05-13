@@ -65,7 +65,6 @@ export const getAllHotels = async (req, res) => {
 };
 
 export const addHotel = async (req, res) => {
-  console.log(req.body)
   try {
 
     const newHotel = new Hotel(req.body);

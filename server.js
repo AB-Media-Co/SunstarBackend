@@ -107,9 +107,6 @@ app.use((err, req, res, next) => {
 });
 
 
-
-
-
 // Day Use Room Routes
 app.use('/api', dayUseRoomRoutes);
 

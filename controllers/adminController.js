@@ -147,14 +147,12 @@ export const loginAdmin = async (req, res) => {
 
   try {
     const admin = await Admin.findOne({ username }).select('+password');
-    console.log('Fetched Admin:', admin);
 
     if (!admin) return handleError(res, 401, 'Invalid credentials - Admin not found');
 
     // const isPasswordMatch = await admin.matchPassword(password);
 
 const isPasswordMatch = await bcrypt.compare(password, admin.password);
-console.log('Bcrypt Comparison Result:', isPasswordMatch);
 
     if (!isPasswordMatch) return handleError(res, 401, 'Invalid credentials - Password mismatch');
 

@@ -36,22 +36,21 @@ const app = express();
 //   credentials: true
 // }));
 
-
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
 
 // app.use(cors({
-//   origin: '*'
+//   origin: [
+//     'http://localhost:5173',
+//     'https://sunstarhospitality.com',
+//     'https://www.sunstarhospitality.com', // Explicitly allow www
+//     'https://live.ipms247.com',
+//   ],
+//   credentials: true // If using cookies/auth headers
 // }));
-
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://sunstarhospitality.com',
-    'https://www.sunstarhospitality.com', // Explicitly allow www
-    'https://live.ipms247.com',
-  ],
-  credentials: true // If using cookies/auth headers
-}));
 
 // Middleware
 app.use(express.json());

@@ -48,14 +48,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
-// app.use(cors({
-//   origin: '*',
-//   credentials: true
-// }));
-
-
-
 // Middleware
 app.use(express.json());
 

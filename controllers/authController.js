@@ -44,7 +44,6 @@ export const verifyOtp = async (req, res) => {
     const url = `https://2factor.in/API/V1/${API_KEY}/SMS/VERIFY/${sessionId}/${otp}`;
     const response = await axios.get(url);
 
-    console.log("OTP Verification Response:", response.data);
 
     if (response.data.Details === 'OTP Matched') {
       let user = await User.findOne({ phone });

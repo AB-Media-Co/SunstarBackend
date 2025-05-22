@@ -20,6 +20,7 @@ import metaRoutes from './routes/metaRoutes.js';
 import createBooking from './routes/createBookingRoute.js';
 import dayUseRoomRoutes from './routes/dayUseRoomRoutes.js';
 import faqRoutes from './routes/faqRoutes.js';
+import packageRoutes from './routes/packageRoutes.js';
 
 
 dotenv.config();
@@ -165,7 +166,8 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/meta', metaRoutes);
 app.use('/api/newBooking', createBooking);
 app.use('/api/faqs', faqRoutes);
-
+app.use('/api', packageRoutes);
+app.use('/api', packageRoutes);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));

@@ -1,0 +1,1 @@
+import{j as a}from"./index-CBuf6u-D.js";const m=({position:t="lg:w-auto w-[10em]",src:e="/images/HomepageImages/RoundPatternSection2.svg",divClass:s="relative"})=>a.jsx("div",{className:`${s} w-full h-full`,children:a.jsx("img",{src:e,alt:"Background Pattern",className:`absolute rotating-image top-0 ${t}  `})});export{m as R};

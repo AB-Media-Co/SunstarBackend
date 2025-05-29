@@ -167,7 +167,6 @@ app.use('/api/meta', metaRoutes);
 app.use('/api/newBooking', createBooking);
 app.use('/api/faqs', faqRoutes);
 app.use('/api', packageRoutes);
-app.use('/api', packageRoutes);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));

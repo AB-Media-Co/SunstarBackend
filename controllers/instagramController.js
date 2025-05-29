@@ -13,6 +13,7 @@ const ig = new IgApiClient();
 
 const fetchInstagramPosts = async (req, res) => {
   try {
+    console.log("hello",req.body)
     // Ensure the access token is properly set in the environment variables
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     if (!accessToken) {

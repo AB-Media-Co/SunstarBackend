@@ -35,6 +35,7 @@ export const getStatesWithPackagesSummary = async (req, res) => {
 export const updateState = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id)
     const { name, image } = req.body;
     const updated = await State.findByIdAndUpdate(id, { name, image }, { new: true });
     if (!updated) return res.status(404).json({ message: 'State not found' });
@@ -79,13 +80,21 @@ export const getAllPackages = async (req, res) => {
 
 export const getPackagesByState = async (req, res) => {
   try {
-    const state = req.params.state;
-    const packages = await TravelPackage.find({ state });
+    // Step 1: Get state name from params
+    const stateName = req.params.state;
+
+    // Step 2: Find the State document by name
+    const stateDoc = await State.findOne({ name: stateName });
+    if (!stateDoc) return res.status(404).json({ message: "State not found" });
+
+    // Step 3: Find packages by stateId
+    const packages = await TravelPackage.find({ stateId: stateDoc._id });
     res.status(200).json(packages);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const getPackageById = async (req, res) => {
   try {
@@ -99,31 +108,30 @@ export const getPackageById = async (req, res) => {
 
 
 export const updatePackage = async (req, res) => {
-    try {
-      const updated = await TravelPackage.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      if (!updated) return res.status(404).json({ message: 'Package not found' });
-      res.json(updated);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  };
-  
-  export const deletePackage = async (req, res) => {
-    try {
-      const deleted = await TravelPackage.findByIdAndDelete(req.params.id);
-      if (!deleted) return res.status(404).json({ message: 'Package not found' });
-      res.json({ message: 'Package deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
+  try {
+    const updated = await TravelPackage.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Package not found' });
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
-  export const getTopSellingPackages = async (req, res) => {
-    try {
-      const topPackages = await TravelPackage.find({ topSelling: true });
-      res.status(200).json(topPackages);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-  
+export const deletePackage = async (req, res) => {
+  try {
+    const deleted = await TravelPackage.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Package not found' });
+    res.json({ message: 'Package deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getTopSellingPackages = async (req, res) => {
+  try {
+    const topPackages = await TravelPackage.find({ topSelling: true });
+    res.status(200).json(topPackages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

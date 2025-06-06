@@ -2,210 +2,193 @@ import axios from 'axios';
 import xml2js from 'xml2js';
 import Room from '../models/Room.js';
 import mongoose from 'mongoose';
+import dayjs from 'dayjs'
 
 const getToday = () => new Date().toISOString().split('T')[0];
 const getTomorrow = () => new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
+
+const processGroupedRoomData = (roomList) => {
+  const grouped = {}
+
+  for (const room of roomList) {
+    const key = room.Roomtype_Name
+
+    const availableRooms = Object.values(room.available_rooms || {}).map(Number)
+    const exclusiveTaxes = Object.values(room.room_rates_info?.exclusive_tax || {}).map(Number)
+
+    const minAvailable = availableRooms.length ? Math.min(...availableRooms) : 0
+    const minExclusiveTax = exclusiveTaxes.length ? Math.min(...exclusiveTaxes) : 0
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        Roomtype_Name: room.Roomtype_Name,
+        Room_Max_adult: room.Room_Max_adult,
+        Room_Max_child: room.Room_Max_child,
+        hotelcode: room.hotelcode,
+        roomtypeunkid: room.roomtypeunkid,
+        ratetypeunkid: room.ratetypeunkid,
+        roomrateunkid: room.roomrateunkid,
+        min_available_rooms: minAvailable,
+        min_exclusive_tax: minExclusiveTax
+      }
+    } else {
+      const current = grouped[key]
+      if (minExclusiveTax < current.min_exclusive_tax || minAvailable < current.min_available_rooms) {
+        grouped[key] = {
+          Roomtype_Name: room.Roomtype_Name,
+          Room_Max_adult: room.Room_Max_adult,
+          Room_Max_child: room.Room_Max_child,
+          hotelcode: room.hotelcode,
+          roomtypeunkid: room.roomtypeunkid,
+          ratetypeunkid: room.ratetypeunkid,
+          roomrateunkid: room.roomrateunkid,
+          min_available_rooms: minAvailable,
+          min_exclusive_tax: minExclusiveTax
+        }
+      }
+    }
+  }
+
+  return Object.values(grouped)
+}
+
+
+
+
+
+export const getRoomList = async (req, res) => {
+  try {
+    const { hotelCode, authCode, fromDate, toDate } = req.query
+
+    const numNights = toDate ? dayjs(toDate).diff(dayjs(fromDate), 'day') : 1
+
+    const url = `https://live.ipms247.com/booking/reservation_api/listing.php?request_type=RoomList&HotelCode=${hotelCode}&APIKey=${authCode}&check_in_date=${fromDate}&num_nights=${numNights}&number_adults=1&number_children=0&num_rooms=1&promotion_code=&property_configuration_info=0&showtax=0&show_only_available_rooms=0&language=en&roomtypeunkid=&packagefor=DESKTOP&promotionfor=DESKTOP`
+
+    const response = await axios.get(url)
+    const processedData = processGroupedRoomData(response.data)
+
+    res.status(200).json({
+      success: true,
+      data: processedData,
+    })
+  } catch (error) {
+    console.error('Error fetching room list:', error.message)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch room list',
+    })
+  }
+}
+
+
 export const getSyncedRooms = async (req, res) => {
   try {
-    const { hotelCode, authCode, fromDate, toDate } = req.query;
-    console.log(hotelCode, authCode, fromDate, toDate)
+    const { hotelCode, authCode, fromDate, toDate } = req.query
+
     if (!hotelCode || !authCode) {
-      return res.status(400).json({ error: 'hotelCode and authCode are required as query parameters' });
+      return res.status(400).json({ error: 'hotelCode and authCode are required as query parameters' })
     }
 
-    const finalFromDate = fromDate || getToday();
-    const finalToDate = toDate || getTomorrow();
+    const finalFromDate = fromDate || dayjs().format('YYYY-MM-DD')
+    const finalToDate = toDate || dayjs().add(1, 'day').format('YYYY-MM-DD')
+    const numNights = dayjs(finalToDate).diff(dayjs(finalFromDate), 'day') || 1
 
-    // -----------------------------
-    // 1. Call the Rate API
-    // -----------------------------
-    const rateXmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
-    <RES_Request>
-      <Request_Type>Rate</Request_Type>
-      <Authentication>
-        <HotelCode>${hotelCode}</HotelCode>
-        <AuthCode>${authCode}</AuthCode>
-      </Authentication>
-      <FromDate>${finalFromDate}</FromDate>
-      <ToDate>${finalToDate}</ToDate>
-    </RES_Request>`;
+    // 1. Call IPMS247 JSON RoomList API
+    const url = `https://live.ipms247.com/booking/reservation_api/listing.php?request_type=RoomList&HotelCode=${hotelCode}&APIKey=${authCode}&check_in_date=${finalFromDate}&num_nights=${numNights}&number_adults=1&number_children=0&num_rooms=1&promotion_code=&property_configuration_info=0&showtax=0&show_only_available_rooms=0&language=en&roomtypeunkid=&packagefor=DESKTOP&promotionfor=DESKTOP`
 
-    const rateResponse = await axios.post(
-      'https://live.ipms247.com/pmsinterface/getdataAPI.php',
-      rateXmlPayload,
-      { headers: { 'Content-Type': 'application/xml' } }
-    );
+    const response = await axios.get(url)
+    const roomList = response.data
 
-    console.log(rateResponse.data)
+    // 2. Group rooms by Roomtype_Name and find min rate & availability
+    const grouped = {}
 
-    const parser = new xml2js.Parser({ explicitArray: false });
-    const parsedRateResult = await parser.parseStringPromise(rateResponse.data);
-    let rateRooms = [];
+    for (const room of roomList) {
+      const key = room.Roomtype_Name
 
-    if (
-      parsedRateResult &&
-      parsedRateResult.RES_Response &&
-      parsedRateResult.RES_Response.RoomInfo &&
-      parsedRateResult.RES_Response.RoomInfo.Source
-    ) {
-      let sources = parsedRateResult.RES_Response.RoomInfo.Source;
-      if (!Array.isArray(sources)) sources = [sources];
+      const availableRooms = Object.values(room.available_rooms || {}).map(Number)
+      const exclusiveTaxes = Object.values(room.room_rates_info?.exclusive_tax || {}).map(Number)
 
-      sources.forEach((source) => {
-        if (source.RoomTypes && source.RoomTypes.RateType) {
-          let rateTypes = source.RoomTypes.RateType;
-          if (!Array.isArray(rateTypes)) rateTypes = [rateTypes];
+      const minAvailable = availableRooms.length ? Math.min(...availableRooms) : 0
+      const minExclusiveTax = exclusiveTaxes.length ? Math.min(...exclusiveTaxes) : 0
 
-          rateTypes.forEach((rate) => {
-            rateRooms.push({
-              RoomTypeID: rate.RoomTypeID,
-              RateTypeID: rate.RateTypeID,
-              FromDate: rate.FromDate,
-              ToDate: rate.ToDate,
-              discountRate: rate.RoomRate?.Base ? parseFloat(rate.RoomRate.Base) : undefined,
-              extraAdult: rate.RoomRate?.ExtraAdult ? parseFloat(rate.RoomRate.ExtraAdult) : undefined,
-              extraChild: rate.RoomRate?.ExtraChild ? parseFloat(rate.RoomRate.ExtraChild) : undefined,
-            });
-          });
+      if (
+        !grouped[key] ||
+        minExclusiveTax < grouped[key].min_exclusive_tax ||
+        minAvailable < grouped[key].min_available_rooms
+      ) {
+        grouped[key] = {
+          Roomtype_Name: room.Roomtype_Name,
+          Room_Max_adult: room.Room_Max_adult,
+          Room_Max_child: room.Room_Max_child,
+          hotelcode: room.hotelcode,
+          roomtypeunkid: room.roomtypeunkid,
+          ratetypeunkid: room.ratetypeunkid,
+          roomrateunkid: room.roomrateunkid,
+          min_available_rooms: minAvailable,
+          min_exclusive_tax: minExclusiveTax
         }
-      });
-    }
-
-    // -----------------------------
-    // 2. Call the Inventory API
-    // -----------------------------
-    const inventoryXmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
-    <RES_Request>
-      <Request_Type>Inventory</Request_Type>
-      <Authentication>
-        <HotelCode>${hotelCode}</HotelCode>
-        <AuthCode>${authCode}</AuthCode>
-      </Authentication>
-      <FromDate>${finalFromDate}</FromDate>
-      <ToDate>${finalToDate}</ToDate>
-    </RES_Request>`;
-
-    const inventoryResponse = await axios.post(
-      'https://live.ipms247.com/pmsinterface/getdataAPI.php',
-      inventoryXmlPayload,
-      { headers: { 'Content-Type': 'application/xml' } }
-    );
-
-    const parsedInventoryResult = await parser.parseStringPromise(inventoryResponse.data);
-    const availabilityByRoomType = {};
-
-    if (
-      parsedInventoryResult &&
-      parsedInventoryResult.RES_Response &&
-      parsedInventoryResult.RES_Response.RoomInfo &&
-      parsedInventoryResult.RES_Response.RoomInfo.Source
-    ) {
-      let sources = parsedInventoryResult.RES_Response.RoomInfo.Source;
-      if (!Array.isArray(sources)) sources = [sources];
-
-      sources.forEach((source) => {
-        if (source.RoomTypes && source.RoomTypes.RoomType) {
-          let roomTypes = source.RoomTypes.RoomType;
-          if (!Array.isArray(roomTypes)) roomTypes = [roomTypes];
-
-          roomTypes.forEach((room) => {
-            const roomTypeID = room.RoomTypeID;
-            const availability = parseInt(room.Availability);
-            
-            if (!availabilityByRoomType[roomTypeID] && availabilityByRoomType[roomTypeID] !== 0) {
-              availabilityByRoomType[roomTypeID] = availability;
-            } else {
-              // Store the minimum availability for each room type
-              availabilityByRoomType[roomTypeID] = Math.min(availabilityByRoomType[roomTypeID], availability);
-            }
-          });
-        }
-      });
-    }
-
-    // -----------------------------
-    // 3. Find Lowest Rate for Each RoomTypeID
-    // -----------------------------
-    const lowestRateRooms = [];
-
-    const groupedByRoomType = rateRooms.reduce((acc, room) => {
-      if (!acc[room.RoomTypeID]) {
-        acc[room.RoomTypeID] = [];
       }
-      acc[room.RoomTypeID].push(room);
-      return acc;
-    }, {});
+    }
 
-    // Loop through each group and find the lowest rate
-    for (const roomTypeID of Object.keys(groupedByRoomType)) {
-      const rooms = groupedByRoomType[roomTypeID];
-      const lowestRateRoom = rooms.reduce((minRateRoom, currentRoom) => {
-        if (minRateRoom.discountRate > currentRoom.discountRate) {
-          return currentRoom;
-        }
-        return minRateRoom;
-      });
-      
-      // Add the minimum availability to the room data
-      lowestRateRoom.Availability = availabilityByRoomType[roomTypeID] !== undefined 
-        ? parseInt(availabilityByRoomType[roomTypeID]) 
-        : 0;
-      
-      // Fetch additional room details from database
-      const roomDetails = await Room.findOne({ RoomTypeID: roomTypeID });
-      
-      // Merge room details with rate information, preserving existing data
+    const lowestRateRooms = Object.values(grouped)
+
+    // 3. Merge with MongoDB data & upsert
+    let upsertCount = 0
+    const updatedRooms = []
+
+    for (const room of lowestRateRooms) {
+      const roomDetails = await Room.findOne({ RoomTypeID: room.roomtypeunkid })
+
       const enhancedRoom = {
-        ...lowestRateRoom,
+        RoomTypeID: room.roomtypeunkid,
+        RateTypeID: room.ratetypeunkid,
+        roomrateunkid: room.roomrateunkid,
+        HotelCode: room.hotelcode,
+        RoomName: room.Roomtype_Name,
+        Availability: room.min_available_rooms,
+        discountRate: room.min_exclusive_tax,
+        maxGuests: parseInt(room.Room_Max_adult) || 1,
+
         RoomImage: roomDetails?.RoomImage || [],
-        HotelCode: roomDetails?.HotelCode || hotelCode,
-        RoomName: roomDetails?.RoomName,
         RoomDescription: roomDetails?.RoomDescription,
         AboutRoom: roomDetails?.AboutRoom || {},
         Amenities: roomDetails?.Amenities || [],
-        maxGuests: roomDetails?.maxGuests,
         squareFeet: roomDetails?.squareFeet,
         show: roomDetails?.show ?? true,
         source: roomDetails?.source || 'API',
         FromDate: finalFromDate,
-        ToDate: finalToDate,
-        
+        ToDate: finalToDate
+      }
 
-      };
-      console.log(enhancedRoom)
-
-      lowestRateRooms.push(enhancedRoom);
-    }
-
-    // -----------------------------
-    // 4. Upsert the Lowest Rate Data into the Database
-    // -----------------------------
-    let upsertCount = 0;
-    const updatedRooms = [];
-    for (const room of lowestRateRooms) {
       const updatedRoom = await Room.findOneAndUpdate(
-        { RoomTypeID: room.RoomTypeID, RateTypeID: room.RateTypeID },
-        { $set: { ...room } },
+        {
+          RoomTypeID: enhancedRoom.RoomTypeID,
+          RateTypeID: enhancedRoom.RateTypeID,
+          roomrateunkid: enhancedRoom.roomrateunkid
+        },
+        { $set: { ...enhancedRoom } },
         { new: true, upsert: true }
-      );
-      upsertCount++;
-      updatedRooms.push(updatedRoom);
+      )
+
+      upsertCount++
+      updatedRooms.push(updatedRoom)
     }
 
-  
-
+    // 4. Return response
     return res.json({
-      message: 'Rooms synchronized successfully with lowest rate and availability data',
+      message: 'Rooms synchronized successfully using JSON API',
       upsertedRecords: upsertCount,
-      rooms: updatedRooms, // Use the full updated documents      rateApiData: parsedRateResult,
-      inventoryApiData: parsedInventoryResult
-    });
+      rooms: updatedRooms
+    })
   } catch (error) {
-    console.error('Error syncing rooms:', error);
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    console.error('Error syncing rooms:', error)
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message })
   }
-};
+}
+
+
+
 
 export const getRoomById = async (req, res) => {
   try {
@@ -273,9 +256,9 @@ export const createRoom = async (req, res) => {
     // Compute discount rate using the correct property
     const computedDiscountRate =
       discountRate !== undefined ? parseFloat(discountRate) : undefined;
-      
+
     // Parse Availability as integer if provided
-    const parsedAvailability = 
+    const parsedAvailability =
       Availability !== undefined ? parseInt(Availability) : 0;
 
     // Generate unique identifier if not provided
@@ -327,7 +310,7 @@ export const updateRoom = async (req, res) => {
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid room ID format',
         details: 'ID must be a valid MongoDB ObjectId'
       });
@@ -335,7 +318,7 @@ export const updateRoom = async (req, res) => {
 
     // Check if body is empty
     if (Object.keys(req.body).length === 0) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'No update data provided',
         details: 'Request body cannot be empty'
       });
@@ -360,18 +343,18 @@ export const updateRoom = async (req, res) => {
       { $set: updateData },
       { new: true, runValidators: true, context: 'query' }
     );
-    
+
 
     if (!updatedRoom) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Room not found',
         details: `No room found with ID: ${id}`
       });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Room updated successfully',
-      room: updatedRoom 
+      room: updatedRoom
     });
 
   } catch (error) {
@@ -385,22 +368,22 @@ export const updateRoom = async (req, res) => {
 
     // Handle specific MongoDB errors
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
-        details: error.message 
+        details: error.message
       });
     }
 
     if (error.name === 'CastError') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid data format',
-        details: error.message 
+        details: error.message
       });
     }
 
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal Server Error',
-      details: error.message 
+      details: error.message
     });
   }
 };

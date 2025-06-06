@@ -2,10 +2,10 @@
 import mongoose from 'mongoose';
 
 const packageSchema = new mongoose.Schema({
-  image: {
-    type: String,
+  images: {
+    type: [String], // ✅ Changed from single image to multiple images
     required: true,
-  },  
+  },
   stateId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'State',

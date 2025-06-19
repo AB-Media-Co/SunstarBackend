@@ -23,17 +23,26 @@ const storage = multer.memoryStorage();
 const uploadMultiple = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    if (
+      file.mimetype === 'image/jpeg' ||
+      file.mimetype === 'image/jpg' ||
+      file.mimetype === 'image/png' ||
+      file.mimetype === 'image/webp'
+    ) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG and PNG files are allowed'), false);
+      cb(new Error('Only JPEG, PNG,,jpg and WEBP files are allowed'), false);
     }
   },
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
+  limits: {
+    fileSize: 10 * 1024 * 1024, // ✅ Max 10MB per file
+    files: 5                   // ✅ Max 5 total files across all fields
+  }
 }).fields([
-  { name: 'images', maxCount: 10 },
-  { name: 'image', maxCount: 10 }
+  { name: 'images', maxCount: 5 },
+  { name: 'image', maxCount: 5 }
 ]);
+
 
 // Optimize image with reduced quality for faster processing
 const optimizeImage = async (buffer) => {

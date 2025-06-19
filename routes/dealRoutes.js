@@ -8,7 +8,7 @@ import {
   getOfferCodesForHotel,
   getDiscountedRate
 } from '../controllers/dealController.js';
-import { sendOtp, verifyOtp } from '../controllers/authController.js';
+// import { sendOtp, verifyOtp } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.post('/discountedRate', getDiscountedRate);
 
 
 
-router.post('/sendOtp', sendOtp);
-router.post('/verifyOtp', verifyOtp);
+// router.post('/sendOtp', sendOtp);
+// router.post('/verifyOtp', verifyOtp);
 
 export default router;

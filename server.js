@@ -16,12 +16,15 @@ import locationRoutes from './routes/locationRoutes.js';
 import connectDB from './config/db.js';
 import dealRoutes from './routes/dealRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import blogRoutes2 from './routes/blogRoutes2.js';
 import metaRoutes from './routes/metaRoutes.js';
 import createBooking from './routes/createBookingRoute.js';
 import dayUseRoomRoutes from './routes/dayUseRoomRoutes.js';
 import faqRoutes from './routes/faqRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import jobPostRoutes from './routes/jobPostRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
 
 dotenv.config();
@@ -169,6 +172,13 @@ app.use('/api/newBooking', createBooking);
 app.use('/api/faqs', faqRoutes);
 app.use('/api', packageRoutes);
 app.use("/api/jobs", jobPostRoutes);
+app.use('/api/blogs2', blogRoutes2);
+app.use('/api/user', userRoutes);
+app.use('/api/push-booking', pushBooking);
+app.get('/api/seemybookings', getBookingList);
+
+
+
 
 
 // Serve static files

@@ -6,20 +6,23 @@ const bookingDetailsSchema = new mongoose.Schema({
   language: { type: String },
   ResNo: { type: String },
   SubNo: { type: String },
-  BookingType: { type: String },
-  language: { type: String }
+  BookingType: { type: String }
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   phone: {
     type: String,
-    required: true,
+    // Remove unique constraint if you want to allow duplicate phone numbers
+    // unique: true,
+    sparse: true,
     validate: {
       validator: function (v) {
-        return /^[0-9]{10}$/.test(v);  // only 10 digit phone numbers allowed
+        if (!v) return true; // allow empty
+        // Must be digits only and exactly 10 digits
+        return /^[0-9]{10}$/.test(v);
       },
-      message: props => `${props.value} is not a valid phone number!`
+      message: () => `Please enter a valid 10-digit phone number`
     }
   },
   firstName: { type: String, required: true },
@@ -29,14 +32,14 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "travelAgent", "coorporateAgent"],
     default: "user"
   },
-
+  dateOfBirth: { type: String },
+  gender: { type: String, enum: ['Male', 'Female', 'Other', ''] },
+  cityOfResidence: { type: String },
   loyalAgent: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
   otp: { type: String },
   otpExpires: { type: Date },
-
   bookingDetails: [bookingDetailsSchema]
-
 }, { timestamps: true });
 
 export const getModel = (modelName, schema) => {

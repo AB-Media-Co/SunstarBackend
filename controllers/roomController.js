@@ -1,12 +1,7 @@
 import axios from 'axios';
-import xml2js from 'xml2js';
 import Room from '../models/Room.js';
 import mongoose from 'mongoose';
 import dayjs from 'dayjs'
-
-const getToday = () => new Date().toISOString().split('T')[0];
-const getTomorrow = () => new Date(Date.now() + 86400000).toISOString().split('T')[0];
-
 
 const processGroupedRoomData = (roomList) => {
   const grouped = {}
@@ -52,9 +47,6 @@ const processGroupedRoomData = (roomList) => {
 
   return Object.values(grouped)
 }
-
-
-
 
 
 export const getRoomList = async (req, res) => {
@@ -186,8 +178,6 @@ export const getSyncedRooms = async (req, res) => {
     return res.status(500).json({ error: 'Internal Server Error', details: error.message })
   }
 }
-
-
 
 
 export const getRoomById = async (req, res) => {

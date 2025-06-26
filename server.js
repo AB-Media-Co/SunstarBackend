@@ -19,7 +19,6 @@ import blogRoutes from './routes/blogRoutes.js';
 import blogRoutes2 from './routes/blogRoutes2.js';
 import metaRoutes from './routes/metaRoutes.js';
 import createBooking from './routes/createBookingRoute.js';
-import dayUseRoomRoutes from './routes/dayUseRoomRoutes.js';
 import faqRoutes from './routes/faqRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import jobPostRoutes from './routes/jobPostRoutes.js';
@@ -102,10 +101,6 @@ app.use((err, req, res, next) => {
     error: err.message
   });
 });
-
-
-// Day Use Room Routes
-app.use('/api', dayUseRoomRoutes);
 
 
 app.post('/api/booking', async (req, res) => {

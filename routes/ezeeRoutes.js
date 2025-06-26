@@ -3,8 +3,15 @@ import express from 'express';
 import { addHotel, deleteHotel, editHotel, getAllHotels, getSingleHotel } from '../controllers/adminHotelController.js';
 import { createRoom,    deleteRoomById,    getRoomById,   getRoomList,   getSyncedRooms, updateRoom } from '../controllers/roomController.js';
 import { getRoomAndHotelDetails } from '../controllers/getRoomAndHotelDetails.js';
+import { getDayUseRooms, getMonthlyDayUseData, updateDayUseAvailability } from '../controllers/dayUseRoomController.js';
 
 const router = express.Router();
+
+
+router.get('/day-use-rooms', getDayUseRooms);
+router.get('/monthly', getMonthlyDayUseData);
+router.put('/update-availability', updateDayUseAvailability);
+
 
 router.get('/allhotels', getAllHotels);
 router.post('/add/hotel', addHotel);

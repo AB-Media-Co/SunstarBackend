@@ -21,7 +21,6 @@ export const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.query;
 
-    // If email missing or empty
     if (!email || email.trim() === '') {
       return res.json({
         success: true,
@@ -34,32 +33,38 @@ export const getUserByEmail = async (req, res) => {
           lastName: null,
           role: null,
           loyalAgent: null,
-          bookingDetails: []
+          bookingDetails: [],
+          dateOfBirth: null,
+          gender: null,
+          cityOfResidence: null,
+          gstin: null
         }
       });
     }
 
     const user = await User.findOne({ email });
 
-    // If user not found
     if (!user) {
       return res.json({
         success: true,
         data: {
           id: null,
           isVerified: false,
-          email: email,
+          email,
           phone: null,
           firstName: null,
           lastName: null,
           role: null,
           loyalAgent: null,
-          bookingDetails: []
+          bookingDetails: [],
+          dateOfBirth: null,
+          gender: null,
+          cityOfResidence: null,
+          gstin: null
         }
       });
     }
 
-    // If user found
     res.json({
       success: true,
       data: {
@@ -71,7 +76,11 @@ export const getUserByEmail = async (req, res) => {
         lastName: user.lastName,
         role: user.role,
         loyalAgent: user.loyalAgent,
-        bookingDetails: user.bookingDetails
+        bookingDetails: user.bookingDetails,
+        dateOfBirth: user.dateOfBirth || '',
+        gender: user.gender || '',
+        cityOfResidence: user.cityOfResidence || '',
+        gstin: user.gstin || ''
       }
     });
 
@@ -82,14 +91,13 @@ export const getUserByEmail = async (req, res) => {
 
 
 
-
 // Send OTP to email
 export const sendOtp2 = async (req, res) => {
   try {
     const { email, phone, firstName, lastName, role, loyalAgent } = req.body;
 
-    if (!email || !phone) {
-      return res.status(400).json({ success: false, message: 'Email and phone are required' });
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
     const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
@@ -98,19 +106,72 @@ export const sendOtp2 = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = await User.create({
-        email,
-        phone,
-        firstName,
-        lastName,
-        role,
-        loyalAgent,
-        otp,
-        otpExpires
-      });
+      // Check if phone number already exists with another user
+      if (phone && phone.trim() !== '') {
+        const existingPhoneUser = await User.findOne({ phone });
+        if (existingPhoneUser) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Phone number is already registered with another account' 
+          });
+        }
+      }
+
+      try {
+        user = await User.create({
+          email,
+          phone: phone && phone.trim() !== '' ? phone : undefined, // Only set phone if provided
+          firstName,
+          lastName,
+          role,
+          loyalAgent,
+          otp,
+          otpExpires
+        });
+      } catch (createError) {
+        // Handle duplicate key error specifically
+        if (createError.code === 11000) {
+          if (createError.keyPattern && createError.keyPattern.phone) {
+            return res.status(400).json({ 
+              success: false, 
+              message: 'Phone number is already registered with another account' 
+            });
+          }
+          if (createError.keyPattern && createError.keyPattern.email) {
+            return res.status(400).json({ 
+              success: false, 
+              message: 'Email is already registered' 
+            });
+          }
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Account with this information already exists' 
+          });
+        }
+        throw createError; // Re-throw if it's not a duplicate key error
+      }
     } else {
+      // User exists, just update OTP
       user.otp = otp;
       user.otpExpires = otpExpires;
+      
+      // Update other fields if provided (but be careful with phone)
+      if (phone && phone.trim() !== '' && phone !== user.phone) {
+        const existingPhoneUser = await User.findOne({ phone });
+        if (existingPhoneUser && existingPhoneUser._id.toString() !== user._id.toString()) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Phone number is already registered with another account' 
+          });
+        }
+        user.phone = phone;
+      }
+      
+      if (firstName) user.firstName = firstName;
+      if (lastName) user.lastName = lastName;
+      if (role) user.role = role;
+      if (loyalAgent !== undefined) user.loyalAgent = loyalAgent;
+      
       await user.save();
     }
 
@@ -145,6 +206,7 @@ export const sendOtp2 = async (req, res) => {
     res.json({ success: true, message: 'OTP sent successfully' });
 
   } catch (err) {
+    console.error('Error in sendOtp2:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -187,6 +249,57 @@ export const addBookingDetails = async (req, res) => {
     await user.save();
 
     res.json({ success: true, message: 'Booking added successfully', user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+// Check if user is verified by email
+export const checkEmailVerification = async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email || email.trim() === '') {
+      return res.json({ success: false, verified: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (user && user.isVerified) {
+      return res.json({ success: true, verified: true });
+    } else {
+      return res.json({ success: true, verified: false });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
+// ✅ Update User Profile (e.g., DOB, Gender, City, GST, etc.)
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const updateFields = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required for update' });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $set: updateFields },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'User updated successfully', user });
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

@@ -23,6 +23,7 @@ import faqRoutes from './routes/faqRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
 import jobPostRoutes from './routes/jobPostRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
 
@@ -171,6 +172,7 @@ app.use('/api/blogs2', blogRoutes2);
 app.use('/api/user', userRoutes);
 app.use('/api/push-booking', pushBooking);
 app.get('/api/seemybookings', getBookingList);
+app.use('/api/testimonials', testimonialRoutes);
 
 
 

@@ -4,6 +4,15 @@ import Hotel from '../models/Hotel.js';
 import Room from '../models/Room.js';
 import DayUseRoom from '../models/DayUseRoom.js';
 
+
+const roomTypeMap = {
+  "14492": "Value Room",
+  "14494": "Superior Room",
+  "14496": "Standard Room",
+  "14493": "Deluxe Room"
+};
+
+
 export const getDayUseRooms = async (req, res) => {
   try {
     const { date } = req.query;
@@ -23,14 +32,17 @@ export const getDayUseRooms = async (req, res) => {
     for (const hotel of hotels) {
       if (!hotel.isDayUseRoom) continue;
 
+      const roomType = roomTypeMap[hotel.hotelCode.toString()];
+
       const standardRoom = await Room.findOne({
         HotelCode: hotel.hotelCode.toString(),
-        RoomName: 'Standard Room'
-      });
-
+        RoomName: roomType
+      })
       if (!standardRoom) continue;
 
-      const fullDayRate = Number((standardRoom.discountRate * 0.4).toFixed(2));
+      const fullDayRate = Number((standardRoom.discountRate * 0.6).toFixed(2));
+
+      console.log(fullDayRate, "fullDayRate")
 
       let dayUseData = await DayUseRoom.findOne({
         hotel: hotel._id,
@@ -52,7 +64,6 @@ export const getDayUseRooms = async (req, res) => {
           ]
         });
       }
-
       const fullDaySlot = dayUseData.slots.find(slot => slot.timeSlot === 'Full Day') || { availability: 0 };
 
       result.push({
@@ -60,16 +71,10 @@ export const getDayUseRooms = async (req, res) => {
           name: hotel.name,
           hotelCode: hotel.hotelCode,
           location: hotel.location,
+          apiKey: hotel.authKey,
           rating: hotel.rating
         },
-        room: {
-          RoomName: standardRoom.RoomName,
-          RoomImage: standardRoom.RoomImage,
-          AboutRoom: standardRoom.AboutRoom,
-          Amenities: standardRoom.Amenities,
-          squareFeet: standardRoom.squareFeet,
-          _id: standardRoom._id
-        },
+        room: standardRoom.toObject(),
         dayUse: {
           date: dayUseData.date,
           availability: fullDaySlot.availability ?? 0,
@@ -77,6 +82,7 @@ export const getDayUseRooms = async (req, res) => {
           soldOut: (fullDaySlot.availability ?? 0) <= 0
         }
       });
+
     }
 
     return res.status(200).json({
@@ -137,12 +143,20 @@ export const getMonthlyDayUseData = async (req, res) => {
     const results = [];
 
     for (const hotel of hotels) {
+
+
+      const roomType = roomTypeMap[hotel.hotelCode.toString()] || 'Standard Room';
+
       const standardRoom = await Room.findOne({
         HotelCode: hotel.hotelCode.toString(),
-        RoomName: 'Standard Room'
+        RoomName: roomType
       });
 
-      if (!standardRoom) continue;
+
+      if (!standardRoom) {
+        console.warn(`Room not found for HotelCode ${hotel.hotelCode}, RoomName ${roomType}`);
+        continue;
+      }
 
       const fullDayRate = Number((standardRoom.discountRate * 0.4).toFixed(2));
 
@@ -295,3 +309,85 @@ export const updateDayUseAvailability = async (req, res) => {
   }
 };
 
+
+
+export const bulkUpdateDayUseAvailability = async (req, res) => {
+  try {
+    const { date, updates } = req.body;
+
+    if (!date || !Array.isArray(updates) || updates.length === 0) {
+      return res.status(400).json({ error: 'Date and updates array are required' });
+    }
+
+    const inputDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (inputDate < today) {
+      return res.status(400).json({ error: 'Cannot update availability for past dates' });
+    }
+
+    const cleanDate = date.split('T')[0];
+
+    const success = [];
+    const failed = [];
+
+    for (const update of updates) {
+      const { hotelCode, roomName, timeSlot = 'Full Day', availability } = update;
+
+      if (!hotelCode || !roomName || availability === undefined) {
+        failed.push({ hotelCode, roomName, reason: 'Missing hotelCode, roomName or availability' });
+        continue;
+      }
+
+      try {
+        const hotel = await Hotel.findOne({ hotelCode });
+        if (!hotel || !hotel.isDayUseRoom) {
+          failed.push({ hotelCode, roomName, reason: 'Hotel not found or not eligible for day use' });
+          continue;
+        }
+
+        const room = await Room.findOne({ HotelCode: hotelCode, RoomName: roomName });
+        if (!room) {
+          failed.push({ hotelCode, roomName, reason: 'Room not found' });
+          continue;
+        }
+
+        const dayUse = await DayUseRoom.findOne({
+          hotel: hotel._id,
+          room: room._id,
+          date: cleanDate
+        });
+
+        if (!dayUse) {
+          failed.push({ hotelCode, roomName, reason: 'Day use entry not found' });
+          continue;
+        }
+
+        const slotIndex = dayUse.slots.findIndex(slot => slot.timeSlot === timeSlot);
+        if (slotIndex === -1) {
+          failed.push({ hotelCode, roomName, reason: `Slot '${timeSlot}' not found` });
+          continue;
+        }
+
+        dayUse.slots[slotIndex].availability = availability;
+        await dayUse.save();
+
+        success.push({ hotelCode, roomName, availability });
+
+      } catch (err) {
+        failed.push({ hotelCode: update.hotelCode, roomName: update.roomName, reason: err.message });
+      }
+    }
+
+    return res.status(200).json({
+      message: 'Bulk update completed',
+      success,
+      failed
+    });
+
+  } catch (error) {
+    console.error('Error in bulk availability update:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};

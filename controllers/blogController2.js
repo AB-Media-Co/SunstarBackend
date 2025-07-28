@@ -407,6 +407,8 @@ export const getBlogStats = async (req, res) => {
         }
       }
     ]);
+
+    
     
     const categoryStats = await Blog2.aggregate([
       { $match: { status: 'published' } },

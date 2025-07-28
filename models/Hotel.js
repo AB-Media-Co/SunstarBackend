@@ -55,9 +55,21 @@ const AmenitySchema = new mongoose.Schema({
   },
 }, { _id: false });
 
+const MetaSchema = new mongoose.Schema({
+  title: { type: String, trim: true,default:"" },
+  description: { type: String, trim: true,default:"" },
+  
+  keywords: { type: [String], default: [] },
+  ogTitle: { type: String, trim: true,default:"" },
+  ogDescription: { type: String, trim: true,default:"" },
+  ogImage: { type: String, trim: true,default:"" },
+  canonicalUrl: { type: String, trim: true,default:"" },
+}, { _id: false });
+
 const HotelSchema = new mongoose.Schema({
   active: { type: Boolean, default: false },
   name: { type: String, required: true },
+  meta: { type: MetaSchema, default: {} },
   description: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   aboutUs: {

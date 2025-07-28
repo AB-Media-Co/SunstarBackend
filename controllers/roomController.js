@@ -77,6 +77,7 @@ export const getRoomList = async (req, res) => {
 export const getSyncedRooms = async (req, res) => {
   try {
     const { hotelCode, authCode, fromDate, toDate } = req.query
+    console.log("hotelCode", hotelCode, "authCode", authCode, "fromDate", fromDate, "toDate", toDate)
 
     if (!hotelCode || !authCode) {
       return res.status(400).json({ error: 'hotelCode and authCode are required as query parameters' })
@@ -90,7 +91,9 @@ export const getSyncedRooms = async (req, res) => {
     const url = `https://live.ipms247.com/booking/reservation_api/listing.php?request_type=RoomList&HotelCode=${hotelCode}&APIKey=${authCode}&check_in_date=${finalFromDate}&num_nights=${numNights}&number_adults=1&number_children=0&num_rooms=1&promotion_code=&property_configuration_info=0&showtax=0&show_only_available_rooms=0&language=en&roomtypeunkid=&packagefor=DESKTOP&promotionfor=DESKTOP`
 
     const response = await axios.get(url)
+    
     const roomList = response.data
+    console.log(roomList,"roomlistt")
 
     // 2. Group rooms by Roomtype_Name and find min rate & availability
     const grouped = {}
@@ -152,14 +155,18 @@ export const getSyncedRooms = async (req, res) => {
         FromDate: finalFromDate,
         ToDate: finalToDate
       }
-
       const updatedRoom = await Room.findOneAndUpdate(
         {
           RoomTypeID: enhancedRoom.RoomTypeID,
           RateTypeID: enhancedRoom.RateTypeID,
           roomrateunkid: enhancedRoom.roomrateunkid
         },
-        { $set: { ...enhancedRoom } },
+        {
+          $set: {
+            ...enhancedRoom,
+            roomrateunkid: enhancedRoom.roomrateunkid 
+          }
+        },
         { new: true, upsert: true }
       )
 
@@ -213,6 +220,7 @@ export const createRoom = async (req, res) => {
     let {
       RoomTypeID,
       RateTypeID,
+      roomrateunkid,
       RoomImage,
       HotelCode,
       RoomName,
@@ -266,6 +274,7 @@ export const createRoom = async (req, res) => {
     const newRoom = new Room({
       RoomTypeID,
       RateTypeID,
+      roomrateunkid,
       RoomImage,
       HotelCode,
       RoomName,

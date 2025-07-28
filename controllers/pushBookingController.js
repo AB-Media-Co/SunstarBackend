@@ -19,7 +19,7 @@ export const pushBooking = async (req, res) => {
         APIKey: APIKey,
         BookingData: JSON.stringify(BookingData)
     });
-    // console.log("📦 Request Body for InsertBooking:", requestBody);
+    console.log("📦 Request Body for InsertBooking:", requestBody);
 
     const response = await axios.post(
       'https://live.ipms247.com/booking/reservation_api/listing.php',

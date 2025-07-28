@@ -1,0 +1,1 @@
+import{j as e,l as t,G as l}from"./index-9HUsMSC5.js";const o=()=>e.jsxs("div",{className:"relative flex  flex-col justify-between content items-center mt-10 py-10  z-0",children:[e.jsx("div",{className:"absolute top-0 left-0 z-0 w-full h-full",children:e.jsx(t,{position:"md:left-0 top-[-60px] md:top-0 left-[-60px] "})}),e.jsx(l,{})]});export{o as default};

@@ -42,7 +42,7 @@ export const getDayUseRooms = async (req, res) => {
 
       const fullDayRate = Number((standardRoom.discountRate * 0.6).toFixed(2));
 
-      console.log(fullDayRate, "fullDayRate")
+      // console.log(fullDayRate, "fullDayRate")
 
       let dayUseData = await DayUseRoom.findOne({
         hotel: hotel._id,

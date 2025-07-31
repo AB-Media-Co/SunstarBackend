@@ -77,7 +77,7 @@ export const getRoomList = async (req, res) => {
 export const getSyncedRooms = async (req, res) => {
   try {
     const { hotelCode, authCode, fromDate, toDate } = req.query
-    console.log("hotelCode", hotelCode, "authCode", authCode, "fromDate", fromDate, "toDate", toDate)
+    // console.log("hotelCode", hotelCode, "authCode", authCode, "fromDate", fromDate, "toDate", toDate)
 
     if (!hotelCode || !authCode) {
       return res.status(400).json({ error: 'hotelCode and authCode are required as query parameters' })
@@ -93,7 +93,7 @@ export const getSyncedRooms = async (req, res) => {
     const response = await axios.get(url)
     
     const roomList = response.data
-    console.log(roomList,"roomlistt")
+    // console.log(roomList,"roomlistt")
 
     // 2. Group rooms by Roomtype_Name and find min rate & availability
     const grouped = {}

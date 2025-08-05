@@ -21,24 +21,27 @@ export const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.query;
 
+    const emptyData = {
+      id: null,
+      isVerified: false,
+      email: null,
+      phone: null,
+      firstName: null,
+      lastName: null,
+      role: null,
+      loyalAgent: null,
+      bookingDetails: [],
+      totalBookings: 0, // count added
+      dateOfBirth: null,
+      gender: null,
+      cityOfResidence: null,
+      gstin: null
+    };
+
     if (!email || email.trim() === '') {
       return res.json({
         success: true,
-        data: {
-          id: null,
-          isVerified: false,
-          email: null,
-          phone: null,
-          firstName: null,
-          lastName: null,
-          role: null,
-          loyalAgent: null,
-          bookingDetails: [],
-          dateOfBirth: null,
-          gender: null,
-          cityOfResidence: null,
-          gstin: null
-        }
+        data: emptyData
       });
     }
 
@@ -48,19 +51,8 @@ export const getUserByEmail = async (req, res) => {
       return res.json({
         success: true,
         data: {
-          id: null,
-          isVerified: false,
-          email,
-          phone: null,
-          firstName: null,
-          lastName: null,
-          role: null,
-          loyalAgent: null,
-          bookingDetails: [],
-          dateOfBirth: null,
-          gender: null,
-          cityOfResidence: null,
-          gstin: null
+          ...emptyData,
+          email // preserve the queried email
         }
       });
     }
@@ -77,6 +69,7 @@ export const getUserByEmail = async (req, res) => {
         role: user.role,
         loyalAgent: user.loyalAgent,
         bookingDetails: user.bookingDetails,
+        totalBookings: (user.bookingDetails || []).length, // total count
         dateOfBirth: user.dateOfBirth || '',
         gender: user.gender || '',
         cityOfResidence: user.cityOfResidence || '',
@@ -88,6 +81,7 @@ export const getUserByEmail = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 
 

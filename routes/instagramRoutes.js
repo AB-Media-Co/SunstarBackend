@@ -21,7 +21,7 @@ router.get('/posts/:username', async (req, res) => {
     const mediaEdges =
       response.data?.data?.user?.edge_owner_to_timeline_media?.edges || [];
 
-    const posts = mediaEdges.slice(0, 6).map(edge => {
+    const posts = mediaEdges.slice(0, 10).map(edge => {
       const node = edge.node;
       return {
         id: node.id,

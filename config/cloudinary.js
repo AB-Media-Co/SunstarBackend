@@ -27,6 +27,8 @@ const uploadMultiple = multer({
       file.mimetype === 'image/jpeg' ||
       file.mimetype === 'image/jpg' ||
       file.mimetype === 'image/png' ||
+      file.mimetype === 'image/svg+xml' ||
+
       file.mimetype === 'image/webp'
     ) {
       cb(null, true);

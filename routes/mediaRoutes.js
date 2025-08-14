@@ -94,23 +94,6 @@ router.post('/upload', upload.single('image'), (req, res) => {
   });
 });
 
-// Add this route for debugging (remove after fixing)
-router.get('/debug/media-check', (req, res) => {
-  try {
-    const mediaExists = fs.existsSync(MEDIA_DIR);
-    const files = mediaExists ? fs.readdirSync(MEDIA_DIR) : [];
-    
-    res.json({
-      mediaDirectory: MEDIA_DIR,
-      directoryExists: mediaExists,
-      totalFiles: files.length,
-      sampleFiles: files.slice(0, 5), // Show first 5 files
-      targetFile: files.find(f => f.includes('1755162235086_587200834'))
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 
 // DELETE /api/media   body: { "path": "/media/xxxx.png" }

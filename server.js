@@ -190,8 +190,22 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/agents", authRoutes);
 
-// ✅ Serve media files from build/public/media (UPDATED)
-app.use('/media', express.static(path.join(__dirname, 'build', 'public', 'media'), {
+// Replace your current static middleware with this:
+app.use('/media', (req, res, next) => {
+  const filePath = path.join(__dirname, 'build', 'public', 'media', req.path);
+  console.log('🔍 Media request:', {
+    requestedPath: req.path,
+    fullPath: filePath,
+    fileExists: fs.existsSync(filePath)
+  });
+  
+  if (!fs.existsSync(filePath)) {
+    console.log('❌ File not found:', filePath);
+    return res.status(404).json({ error: 'File not found' });
+  }
+  
+  next();
+}, express.static(path.join(__dirname, 'build', 'public', 'media'), {
   maxAge: '30d',
   etag: false
 }));

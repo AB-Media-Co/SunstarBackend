@@ -68,22 +68,32 @@ const getProtocol = (req) => {
 router.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, message: 'No file uploaded' });
 
-  // Use helper function to get correct protocol
   const protocol = getProtocol(req);
-  const publicUrl = `${protocol}://${req.get('host')}/media/${req.file.filename}`;
+  const host = req.get('host');
+  const publicUrl = `${protocol}://${host}/media/${req.file.filename}`;
   
-  console.log('File uploaded:', {
+  // Verify file was actually saved
+  const filePath = req.file.path;
+  const fileExists = fs.existsSync(filePath);
+  
+  console.log('📁 File upload result:', {
     filename: req.file.filename,
-    path: req.file.path,
-    url: publicUrl
+    savedPath: filePath,
+    fileExists: fileExists,
+    generatedUrl: publicUrl
   });
+  
+  if (!fileExists) {
+    return res.status(500).json({ ok: false, message: 'File save failed' });
+  }
   
   return res.json({
     ok: true,
-    url: publicUrl,               // frontend use this
-    path: `/media/${req.file.filename}` // relative path (for delete)
+    url: publicUrl,
+    path: `/media/${req.file.filename}`
   });
 });
+
 
 // DELETE /api/media   body: { "path": "/media/xxxx.png" }
 router.delete('/', async (req, res) => {

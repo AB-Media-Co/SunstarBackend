@@ -274,6 +274,53 @@ export const createTestimonial = async (req, res) => {
 
 
 
+
+export const saveHomePartners = async (req, res) => {
+  try {
+    const { heading, subheading, layout, logos } = req.body || {};
+    const websiteData = await getOrCreateWebsiteData();
+
+    // ensure section object exists
+    if (!websiteData.HomePartners) {
+      websiteData.HomePartners = { logos: [] };
+    }
+
+    // update meta only if provided
+    if (heading !== undefined) websiteData.HomePartners.heading = heading;
+    if (subheading !== undefined) websiteData.HomePartners.subheading = subheading;
+    if (layout !== undefined) websiteData.HomePartners.layout = layout;
+
+    // replace logos only if provided (supports add/update/delete in one go)
+    if (logos !== undefined) {
+      if (!Array.isArray(logos)) {
+        return res.status(400).json({ error: 'logos must be an array' });
+      }
+
+      const sanitized = logos
+        .filter((l) => l && typeof l.src === 'string' && l.src.trim())
+        .map((l) => ({
+          src: String(l.src).trim(),
+          ...(l.alt !== undefined ? { alt: String(l.alt) } : {}),
+          ...(l.link !== undefined ? { link: String(l.link) } : {}),
+        }));
+
+      websiteData.HomePartners.logos = sanitized; // full replace (add/update/delete)
+    }
+
+    await websiteData.save();
+    return res.status(200).json({
+      success: true,
+      message: 'Home partners saved successfully',
+      data: websiteData.HomePartners,
+    });
+  } catch (err) {
+    console.error('saveHomePartners error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
 export const addCoorporateBooking = async (req, res) => {
   try {
     const { CoorporateBookingHeadContent, CoorporateBookingDescription,BusinessPlatformSection } = req.body;

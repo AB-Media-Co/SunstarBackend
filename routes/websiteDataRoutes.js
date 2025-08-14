@@ -14,7 +14,8 @@ import {
   addCoorporateBooking,
   updateHomePageDescription,
   updateFaqs,
-  addContactUsDetail
+  addContactUsDetail,
+  saveHomePartners
 } from '../controllers/websiteDataController.js';
 
 const router = express.Router();
@@ -33,6 +34,8 @@ router.post('/images', gridImages);
 // HeroSections
 router.post('/heroSection', updateHeroSection);
 router.post('/homePageDescription', updateHomePageDescription);
+router.put('/home-partners', saveHomePartners);
+
 
 
 // Shine

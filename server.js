@@ -25,6 +25,8 @@ import jobPostRoutes from './routes/jobPostRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
 import venueRoutes from './routes/venueRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import mediaRoutes from './routes/mediaRoutes.js';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
@@ -176,9 +178,17 @@ app.use('/api/push-booking', pushBooking);
 app.get('/api/seemybookings', getBookingList);
 app.use('/api/testimonials', testimonialRoutes);
 app.use("/api/venues", venueRoutes);
+app.use("/api/agents", authRoutes);
 
 
 
+app.use('/media', express.static(path.join(process.cwd(), 'public', 'media'), {
+  maxAge: '30d',
+  etag: false
+}));
+
+// ✅ API mount
+app.use('/api/media', mediaRoutes);
 
 
 // Serve static files

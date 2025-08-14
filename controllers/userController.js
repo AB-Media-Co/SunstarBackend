@@ -83,8 +83,6 @@ export const getUserByEmail = async (req, res) => {
 };
 
 
-
-
 // Send OTP to email
 export const sendOtp2 = async (req, res) => {
   try {

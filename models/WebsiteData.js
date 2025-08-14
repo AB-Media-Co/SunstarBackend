@@ -50,6 +50,12 @@ const ShineSectionSchema = new Schema(
   }
 );
 
+const PartnerLogoSchema = new Schema({
+  src: { type: String, required: true, trim: true }, // image URL
+  alt: { type: String, trim: true },                  // optional accessible label
+  link: { type: String, trim: true },                 // optional click-through link
+});
+
 
 const HeroSectionSchema = new Schema(
   {
@@ -82,6 +88,12 @@ const HomePageDescriptionsSchema = new Schema(
     }
   }
 )
+const HomePartnersSchema = new Schema({
+  heading: { type: String, trim: true },             // e.g., "Our Partners"
+  subheading: { type: String, trim: true },          // optional subtitle
+  logos: [PartnerLogoSchema],                         // array of logos
+  layout: { type: String, enum: ['grid', 'carousel'], default: 'grid' } // optional layout hint
+});
 
 
 
@@ -180,7 +192,7 @@ const TestimonialSchema = new Schema({
 const CoorporateBookingHeroSection = new Schema({
   title: { type: String },
   description: { type: String },
-  image:{ type: String}
+  image: { type: String }
 
 });
 
@@ -188,7 +200,7 @@ const CoorporateBookingHeroSection = new Schema({
 const CoorporateBookingescriptionSection = new Schema({
   title: { type: String },
   description: { type: String },
-  image:{ type: String}
+  image: { type: String }
 
 });
 
@@ -232,13 +244,13 @@ const ContactUsDetailSchema = new Schema({
     required: true,
     trim: true,
   },
-  OtherEnquieirs:{
-    reservations:{type: String, required: true, trim: true},
-    corporateSales:{type: String, required: true, trim: true},
-    traveAgentSales:{type: String, required: true, trim: true},
-    marketing:{type: String, required: true, trim: true},
-    careers:{type: String, required: true, trim: true},
-    hotelDevelopment:{type: String, required: true, trim: true},
+  OtherEnquieirs: {
+    reservations: { type: String, required: true, trim: true },
+    corporateSales: { type: String, required: true, trim: true },
+    traveAgentSales: { type: String, required: true, trim: true },
+    marketing: { type: String, required: true, trim: true },
+    careers: { type: String, required: true, trim: true },
+    hotelDevelopment: { type: String, required: true, trim: true },
   }
 });
 
@@ -253,9 +265,10 @@ const WebsiteDataSchema = new Schema(
     whatWeOffers: OfferingSectionSchema,
     WhySunstar: WhySunstarSchema,
     Testimonials: TestimonialSchema,
-    CoorporateBooking:CoorporateBookingSchmea,
-    ContactUsDetail:ContactUsDetailSchema,
+    CoorporateBooking: CoorporateBookingSchmea,
+    ContactUsDetail: ContactUsDetailSchema,
     faqs: [FaqSchema],
+    HomePartners: HomePartnersSchema,
   }
 );
 

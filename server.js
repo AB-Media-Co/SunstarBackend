@@ -190,6 +190,26 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/agents", authRoutes);
 
+
+// Add this route for debugging (remove after fixing)
+app.get('/debug/media-check', (req, res) => {
+  try {
+    const mediaExists = fs.existsSync(MEDIA_DIR);
+    const files = mediaExists ? fs.readdirSync(MEDIA_DIR) : [];
+    
+    res.json({
+      mediaDirectory: MEDIA_DIR,
+      directoryExists: mediaExists,
+      totalFiles: files.length,
+      sampleFiles: files.slice(0, 5), // Show first 5 files
+      targetFile: files.find(f => f.includes('1755162235086_587200834'))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Replace your current static middleware with this:
 app.use('/media', (req, res, next) => {
   const filePath = path.join(__dirname, 'build', 'public', 'media', req.path);

@@ -33,12 +33,40 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
+// Helper function to detect proper protocol
+const getProtocol = (req) => {
+  // Check for forwarded protocol headers (common in deployment)
+  if (req.headers['x-forwarded-proto']) {
+    return req.headers['x-forwarded-proto'];
+  }
+  
+  // Check for Heroku, Vercel, Netlify headers
+  if (req.headers['x-forwarded-ssl'] === 'on') {
+    return 'https';
+  }
+  
+  // Check if connection is secure
+  if (req.secure || req.connection.encrypted) {
+    return 'https';
+  }
+  
+  // For production, assume HTTPS (you can also use environment variable)
+  if (process.env.NODE_ENV === 'production') {
+    return 'https';
+  }
+  
+  // Fallback to request protocol
+  return req.protocol;
+};
+
 // POST /api/media/upload  (form field: "image")
 router.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, message: 'No file uploaded' });
 
-  // Static mount below exposes /media -> <root>/public/media
-  const publicUrl = `${req.protocol}://${req.get('host')}/media/${req.file.filename}`;
+  // Use helper function to get correct protocol
+  const protocol = getProtocol(req);
+  const publicUrl = `${protocol}://${req.get('host')}/media/${req.file.filename}`;
+  
   return res.json({
     ok: true,
     url: publicUrl,               // frontend use this

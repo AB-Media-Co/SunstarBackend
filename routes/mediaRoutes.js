@@ -1,143 +1,46 @@
-import express from 'express';
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { Router } from 'express';
+const router = Router();
 
-const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.resolve();
+const MEDIA_DIR = path.join(__dirname, 'build', 'public', 'media');
+fs.mkdirSync(MEDIA_DIR, { recursive: true });
 
-// ✅ Create media directory inside build folder (consistent with app.js)
-const BUILD_DIR = path.join(__dirname, '..', 'build');
-const MEDIA_DIR = path.join(BUILD_DIR, 'public', 'media');
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Always ensure directory exists before upload
-    fs.mkdirSync(MEDIA_DIR, { recursive: true });
-    cb(null, MEDIA_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const base = path
-      .basename(file.originalname, ext)
-      .replace(/[^a-z0-9_-]/gi, '_');
-    cb(null, `${Date.now()}_${Math.round(Math.random() * 1e9)}_${base}${ext}`);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  if (/^image\/(png|jpe?g|webp|gif|svg\+xml)$/.test(file.mimetype)) cb(null, true);
-  else cb(new Error('Only image files are allowed'));
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
-});
-
-// Helper function to detect proper protocol
-const getProtocol = (req) => {
-  // Check for forwarded protocol headers (common in deployment)
-  if (req.headers['x-forwarded-proto']) {
-    return req.headers['x-forwarded-proto'];
-  }
-  
-  // Check for Heroku, Vercel, Netlify headers
-  if (req.headers['x-forwarded-ssl'] === 'on') {
-    return 'https';
-  }
-  
-  // Check if connection is secure
-  if (req.secure || req.connection.encrypted) {
-    return 'https';
-  }
-  
-  // For production, assume HTTPS
-  if (process.env.NODE_ENV === 'production') {
-    return 'https';
-  }
-  
-  // Fallback to request protocol
-  return req.protocol;
-};
-
-// POST /api/media/upload (form field: "image")
-router.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ ok: false, message: 'No file uploaded' });
-
-  const protocol = getProtocol(req);
-  const host = req.get('host');
-  const publicUrl = `${protocol}://${host}/media/${req.file.filename}`;
-  
-  // Verify file was actually saved
-  const filePath = req.file.path;
-  const fileExists = fs.existsSync(filePath);
-  
-  console.log('📁 File upload result:', {
-    filename: req.file.filename,
-    savedPath: filePath,
-    fileExists: fileExists,
-    generatedUrl: publicUrl
-  });
-  
-  if (!fileExists) {
-    return res.status(500).json({ ok: false, message: 'File save failed' });
-  }
-  
-  return res.json({
-    ok: true,
-    url: publicUrl,
-    path: `/media/${req.file.filename}`
-  });
-});
-
-
-
-// DELETE /api/media   body: { "path": "/media/xxxx.png" }
-router.delete('/', async (req, res) => {
-  const relPath = req.body?.path;
-  if (!relPath || !relPath.startsWith('/media/')) {
-    return res.status(400).json({ ok: false, message: 'Invalid path' });
-  }
-  
-  // Build absolute path to file in build/public/media
-  const filename = relPath.replace('/media/', '');
-  const absPath = path.join(MEDIA_DIR, filename);
-  
-  console.log('Attempting to delete file:', absPath);
-  
+router.post('/upload', async (req, res) => {
   try {
-    await fs.promises.unlink(absPath);
-    console.log('File deleted successfully:', absPath);
-    return res.json({ ok: true, message: 'Deleted' });
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    return res.status(404).json({ ok: false, message: 'File not found' });
+    if (!req.files || !req.files.file) {
+      return res.status(400).json({ success: false, msg: 'No file uploaded' });
+    }
+
+    const file = req.files.file;
+
+    // validate type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({ success: false, msg: 'Only image files are allowed' });
+    }
+
+    // generate filename
+    const ext = path.extname(file.name).toLowerCase();
+    const safeBase = path.basename(file.name, ext).replace(/[^a-z0-9_-]/gi, '_');
+    const filename = `${Date.now()}_${Math.round(Math.random() * 1e9)}_${safeBase}${ext}`;
+
+    // move file
+    const dest = path.join(MEDIA_DIR, filename);
+    await file.mv(dest);
+
+    // build public URL
+    const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+    const host = req.get('host');
+    const url = `${proto}://${host}/media/${filename}`;
+
+    res.json({ ok: true, url, path: `/media/${filename}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, msg: 'Something went wrong', err: err.message });
   }
 });
 
-// Optional: GET endpoint to list uploaded files (for debugging)
-router.get('/list', (req, res) => {
-  try {
-    const files = fs.readdirSync(MEDIA_DIR);
-    const fileList = files.map(file => ({
-      filename: file,
-      url: `${getProtocol(req)}://${req.get('host')}/media/${file}`,
-      path: `/media/${file}`
-    }));
-    
-    res.json({
-      ok: true,
-      files: fileList,
-      directory: MEDIA_DIR
-    });
-  } catch (error) {
-    console.error('Error listing files:', error);
-    res.status(500).json({ ok: false, message: 'Could not list files' });
-  }
-});
 
 export default router;

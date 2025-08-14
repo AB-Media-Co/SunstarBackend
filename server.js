@@ -193,13 +193,7 @@ app.use("/api/agents", authRoutes);
 
 
 
-app.use('/media',
-  express.static(path.join(__dirname, 'build', 'public', 'media'), {
-    maxAge: '30d',
-    etag: false
-  })
-);
-
+app.use('/media', express.static(path.join(__dirname, 'client', 'public', 'media')));
 
 // ✅ API mount
 app.use('/api/media', mediaRoutes);

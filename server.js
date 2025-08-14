@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import axios from 'axios'; // Import axios to make external requests
+import fs from 'fs'; // Add this for directory creation
 import adminRoutes from './routes/adminRoutes.js';
 import hotelRoutes from './routes/ImageUpload.js';
 import instagramRoutes from './routes/instagramRoutes.js';
@@ -30,10 +31,12 @@ import mediaRoutes from './routes/mediaRoutes.js';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
-
 dotenv.config();
 
 const app = express();
+
+// Trust proxy for proper HTTPS detection
+app.set('trust proxy', true);
 
 // app.use(cors({
 //   origin: [
@@ -48,7 +51,6 @@ const app = express();
 //   allowedHeaders: ['Content-Type', 'Authorization']
 // }));
 
-
 const corsOptions = {
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -60,7 +62,6 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(express.json());
 
-
 app.set('etag', false);
 
 app.use((req, res, next) => {
@@ -70,6 +71,18 @@ app.use((req, res, next) => {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ✅ Create media directory in build folder at startup
+const BUILD_DIR = path.join(__dirname, 'build');
+const MEDIA_DIR = path.join(BUILD_DIR, 'public', 'media');
+
+// Ensure build and media directories exist
+try {
+  fs.mkdirSync(MEDIA_DIR, { recursive: true });
+  console.log('✅ Media directory created at:', MEDIA_DIR);
+} catch (error) {
+  console.error('Error creating media directory:', error);
+}
 
 // Connect to the database
 (async () => {
@@ -81,7 +94,6 @@ const __dirname = path.dirname(__filename);
     process.exit(1);
   }
 })();
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -106,7 +118,6 @@ app.use((err, req, res, next) => {
     error: err.message
   });
 });
-
 
 app.post('/api/booking', async (req, res) => {
   const { roomData, hotelDetail } = req.body;
@@ -155,7 +166,6 @@ app.post('/api/booking', async (req, res) => {
   }
 });
 
-
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/images', hotelRoutes);
@@ -180,16 +190,14 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/agents", authRoutes);
 
-
-
-app.use('/media', express.static(path.join(process.cwd(), 'public', 'media'), {
+// ✅ Serve media files from build/public/media (UPDATED)
+app.use('/media', express.static(path.join(__dirname, 'build', 'public', 'media'), {
   maxAge: '30d',
   etag: false
 }));
 
 // ✅ API mount
 app.use('/api/media', mediaRoutes);
-
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));
@@ -203,4 +211,5 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Media files served from: ${MEDIA_DIR}`);
 });

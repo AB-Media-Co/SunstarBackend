@@ -2,14 +2,19 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// ✅ media dir: <project-root>/public/media
-const MEDIA_DIR = path.join(process.cwd(), 'public', 'media');
+// ✅ Create media directory inside build folder (consistent with app.js)
+const BUILD_DIR = path.join(__dirname, '..', 'build');
+const MEDIA_DIR = path.join(BUILD_DIR, 'public', 'media');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Always ensure directory exists before upload
     fs.mkdirSync(MEDIA_DIR, { recursive: true });
     cb(null, MEDIA_DIR);
   },
@@ -50,7 +55,7 @@ const getProtocol = (req) => {
     return 'https';
   }
   
-  // For production, assume HTTPS (you can also use environment variable)
+  // For production, assume HTTPS
   if (process.env.NODE_ENV === 'production') {
     return 'https';
   }
@@ -59,13 +64,19 @@ const getProtocol = (req) => {
   return req.protocol;
 };
 
-// POST /api/media/upload  (form field: "image")
+// POST /api/media/upload (form field: "image")
 router.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ ok: false, message: 'No file uploaded' });
 
   // Use helper function to get correct protocol
   const protocol = getProtocol(req);
   const publicUrl = `${protocol}://${req.get('host')}/media/${req.file.filename}`;
+  
+  console.log('File uploaded:', {
+    filename: req.file.filename,
+    path: req.file.path,
+    url: publicUrl
+  });
   
   return res.json({
     ok: true,
@@ -80,12 +91,41 @@ router.delete('/', async (req, res) => {
   if (!relPath || !relPath.startsWith('/media/')) {
     return res.status(400).json({ ok: false, message: 'Invalid path' });
   }
-  const absPath = path.join(process.cwd(), 'public', relPath.replace('/media/', 'media/'));
+  
+  // Build absolute path to file in build/public/media
+  const filename = relPath.replace('/media/', '');
+  const absPath = path.join(MEDIA_DIR, filename);
+  
+  console.log('Attempting to delete file:', absPath);
+  
   try {
     await fs.promises.unlink(absPath);
+    console.log('File deleted successfully:', absPath);
     return res.json({ ok: true, message: 'Deleted' });
-  } catch {
+  } catch (error) {
+    console.error('Error deleting file:', error);
     return res.status(404).json({ ok: false, message: 'File not found' });
+  }
+});
+
+// Optional: GET endpoint to list uploaded files (for debugging)
+router.get('/list', (req, res) => {
+  try {
+    const files = fs.readdirSync(MEDIA_DIR);
+    const fileList = files.map(file => ({
+      filename: file,
+      url: `${getProtocol(req)}://${req.get('host')}/media/${file}`,
+      path: `/media/${file}`
+    }));
+    
+    res.json({
+      ok: true,
+      files: fileList,
+      directory: MEDIA_DIR
+    });
+  } catch (error) {
+    console.error('Error listing files:', error);
+    res.status(500).json({ ok: false, message: 'Could not list files' });
   }
 });
 

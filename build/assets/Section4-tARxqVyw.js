@@ -1,0 +1,1 @@
+import{j as e,i as t,F as s}from"./index-C3oB0LUL.js";const o=()=>e.jsxs("div",{className:"relative flex  flex-col justify-between content items-center mt-10 py-10  z-0",children:[e.jsx("div",{className:"absolute top-0 left-0 z-0 w-full h-full",children:e.jsx(t,{position:"md:left-0 top-[-60px] md:top-0 left-[-60px] "})}),e.jsx(s,{})]});export{o as default};

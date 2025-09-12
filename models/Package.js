@@ -6,6 +6,10 @@ const packageSchema = new mongoose.Schema({
     type: [String], // ✅ Changed from single image to multiple images
     required: true,
   },
+  image: {
+    type: String,
+    required: true
+  },
   stateId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'State',

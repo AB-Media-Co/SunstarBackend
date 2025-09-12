@@ -86,38 +86,47 @@ export const deleteAmenity = async (req, res) => {
 
 export const gridImages = async (req, res) => {
   try {
-    const { massonaryGrid } = req.body;
+    const { massonaryGrid, path } = req.body;
     const websiteData = await getOrCreateWebsiteData();
 
-    // Ensure grid exists (if not, create an empty object)
-    if (!websiteData.grid) {
-      websiteData.grid = {};
-    }
+    // Decide which key to use
+    const gridPath = path && ["travelAgent", "career"].includes(path)
+      ? path
+      : "default";
 
-    // Update the images if provided
+    // Ensure the object exists
+    if (!websiteData.grid) websiteData.grid = {};
+    if (!websiteData.grid[gridPath]) websiteData.grid[gridPath] = {};
+
+    // Update images if provided
     if (
       massonaryGrid &&
       Array.isArray(massonaryGrid.images) &&
       massonaryGrid.images.length > 0
     ) {
-      websiteData.grid.images = massonaryGrid.images;
+      websiteData.grid[gridPath].images = massonaryGrid.images;
     }
 
-    // Update the content if provided
+    // Update content if provided
     if (
       massonaryGrid &&
       Array.isArray(massonaryGrid.content) &&
       massonaryGrid.content.length > 0
     ) {
-      websiteData.grid.content = massonaryGrid.content;
+      websiteData.grid[gridPath].content = massonaryGrid.content;
     }
 
     await websiteData.save();
-    res.status(201).json(websiteData);
+    res.status(201).json({
+      success: true,
+      path: gridPath,
+      data: websiteData.grid[gridPath],
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
@@ -323,16 +332,30 @@ export const saveHomePartners = async (req, res) => {
 
 export const addCoorporateBooking = async (req, res) => {
   try {
-    const { CoorporateBookingHeadContent, CoorporateBookingDescription,BusinessPlatformSection } = req.body;
+    const {
+      CoorporateBookingHeadContent,
+      CoorporateBookingDescription,
+      BusinessPlatformSection = [],
+      BenefitsSection = []        // <-- NEW
+    } = req.body;
+
+    // ensure arrays
+    const businessPlatforms = Array.isArray(BusinessPlatformSection) ? BusinessPlatformSection : [];
+    const benefits = Array.isArray(BenefitsSection) ? BenefitsSection : [];
 
     let websiteData = await WebsiteData.findOne();
 
+    const newPayload = {
+      CoorporateBookingHeadContent,
+      CoorporateBookingDescription,
+      BusinessPlatformSection: businessPlatforms,
+      BenefitsSection: benefits, // <-- NEW
+    };
+
     if (!websiteData) {
-      websiteData = new WebsiteData({
-        CoorporateBooking: { CoorporateBookingHeadContent, CoorporateBookingDescription,BusinessPlatformSection }
-      });
+      websiteData = new WebsiteData({ CoorporateBooking: newPayload });
     } else {
-      websiteData.CoorporateBooking = { CoorporateBookingHeadContent, CoorporateBookingDescription ,BusinessPlatformSection};
+      websiteData.CoorporateBooking = newPayload; 
     }
 
     await websiteData.save();
@@ -340,13 +363,14 @@ export const addCoorporateBooking = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Corporate Booking data added/updated successfully',
-      data: websiteData.CoorporateBooking
+      data: websiteData.CoorporateBooking,
     });
   } catch (error) {
     console.error('Error updating Corporate Booking:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 export const updateFaqs = async (req, res) => {
   try {

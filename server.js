@@ -28,6 +28,8 @@ import testimonialRoutes from './routes/testimonialRoutes.js';
 import venueRoutes from './routes/venueRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import mediaRoutes from './routes/mediaRoutes.js';
+import partnerRoutes from './routes/partnerRoutes.js';
+import venueLocation from './routes/venueLocation.js  ';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
@@ -53,7 +55,7 @@ app.set('trust proxy', true);
 
 const corsOptions = {
   origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
@@ -127,7 +129,6 @@ app.post('/api/booking', async (req, res) => {
     return res.status(400).json({ message: 'Missing hotel details' });
   }
 
-  // Validate essential booking data
   if (!roomData?.Room_Details || !roomData?.check_in_date || !roomData?.check_out_date || !roomData?.Email_Address) {
     return res.status(400).json({ message: 'Missing required booking information' });
   }
@@ -141,14 +142,11 @@ app.post('/api/booking', async (req, res) => {
       BookingData: JSON.stringify(roomData)
     };
 
-    // Make the API request to the external service using proper URL encoding
     const response = await axios.get(apiUrl, { params });
 
-    // Handle eZee API error responses
     if (response.data && response.data.ReservationNo) {
       res.json(response.data);
     } else {
-      // Handle error response from eZee API
       console.error('eZee API error:', response.data);
       res.status(400).json({
         message: 'Booking failed',
@@ -158,7 +156,6 @@ app.post('/api/booking', async (req, res) => {
   } catch (error) {
     console.error('Error making booking request:', error);
 
-    // Return a more detailed error message
     res.status(500).json({
       message: 'Failed to make booking. Please try again.',
       error: error.response?.data || error.message
@@ -189,6 +186,10 @@ app.get('/api/seemybookings', getBookingList);
 app.use('/api/testimonials', testimonialRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/agents", authRoutes);
+app.use('/api/partners', partnerRoutes);
+app.use('/api/venue-locations', venueLocation);
+
+
 
 
 

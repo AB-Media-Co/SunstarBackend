@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const enquirySchema = new Schema({
   page: { type: String, required: true },
   companyName: { type: String, required: true },
-  name: { type: String ,required: true },
+  name: { type: String  },
   email: { type: String, required: true },
   address: String,
   decisionMaker: String,

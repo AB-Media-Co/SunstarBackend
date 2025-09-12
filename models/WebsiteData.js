@@ -104,6 +104,7 @@ const OfferingSectionSchema = new Schema({
     {
       title: { type: String },
       description: { type: String },
+      link: { type: String },
       image: { type: String }
     }
   ]
@@ -131,29 +132,21 @@ const WhySunstarSchema = new Schema({
 
 const GridItemSchema = new Schema({
   images: [
-    {
-      type: String,
-      required: true
-    }
+    { type: String, required: true }
   ],
-  content: [{
-    type: {
-      type: String,
-      required: true,
-      enum: ['div', 'image']
+  content: [
+    {
+      type: {
+        type: String,
+        required: true,
+        enum: ["div", "image"],
+      },
+      content: { type: String },
+      bg: { type: String },
+      src: { type: String },
     },
-    content: {
-      type: String
-    },
-    bg: {
-      type: String
-    },
-    src: {
-      type: String
-    }
-  }]
+  ],
 });
-
 
 const ClientSchema = new Schema({
   name: {
@@ -211,11 +204,18 @@ const BusinessPlatformSection = new Schema({
 });
 
 
+const BenefitsSection = new Schema({
+  title: { type: String },
+  description: { type: String },
+});
+
+
 
 const CoorporateBookingSchmea = new Schema({
   CoorporateBookingHeadContent: CoorporateBookingHeroSection,
   CoorporateBookingDescription: CoorporateBookingescriptionSection,
   BusinessPlatformSection: [BusinessPlatformSection],
+  BenefitsSection: [BenefitsSection]
 });
 
 
@@ -258,7 +258,11 @@ const ContactUsDetailSchema = new Schema({
 const WebsiteDataSchema = new Schema(
   {
     amenities: [AmenitySchema],
-    grid: GridItemSchema,
+    grid: {
+      default: GridItemSchema,        // fallback
+      travelAgent: GridItemSchema,    // optional
+      career: GridItemSchema          // optional
+    },
     shineSection: ShineSectionSchema,
     heroSection: HeroSectionSchema,
     homePageDescription: HomePageDescriptionsSchema,

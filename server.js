@@ -191,8 +191,7 @@ app.use("/api/agents", authRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/venue-locations', venueLocation);
 app.use("/api/dev-owners-stats", dealStatsRoutes);
-app.use("/api/policies", policyRoutes);
-
+app.use('/api/policy', policyRoutes);
 
 
 

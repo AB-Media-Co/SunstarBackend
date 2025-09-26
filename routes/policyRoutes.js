@@ -1,15 +1,9 @@
-import { Router } from "express";
-import { getPolicy, upsertPolicy, getHistory } from "../controllers/policyController.js";
+import express from 'express';
+import { getPolicy, updatePolicy } from '../controllers/policyController.js';
 
-const router = Router();
+const router = express.Router();
 
-
-router.get("/:type", getPolicy);
-
-
-router.get("/:type/history", getHistory);
-
-router.post("/:type", upsertPolicy);
-router.put("/:type", upsertPolicy);
+router.get('/:type', getPolicy);
+router.put('/:type', updatePolicy);
 
 export default router;

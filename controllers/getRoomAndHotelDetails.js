@@ -12,7 +12,7 @@ export const getRoomAndHotelDetails = async (req, res) => {
     }
     
     const room = await Room.findById(roomId)
-      .select('RoomName RoomTypeID RateTypeID roomrateunkid discountRate maxGuests')
+      .select('RoomName RoomTypeID RateTypeID roomrateunkid discountRate maxGuests RoomImage')
       .lean();
       
     const hotel = await Hotel.findOne({ hotelCode: Number(hotelCode) })

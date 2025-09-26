@@ -29,7 +29,8 @@ import venueRoutes from './routes/venueRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import mediaRoutes from './routes/mediaRoutes.js';
 import partnerRoutes from './routes/partnerRoutes.js';
-import venueLocation from './routes/venueLocation.js  ';
+import venueLocation from './routes/venueLocation.js ';
+import dealStatsRoutes from './routes/dealStatsRoutes.js';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
@@ -188,6 +189,8 @@ app.use("/api/venues", venueRoutes);
 app.use("/api/agents", authRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/venue-locations', venueLocation);
+app.use("/api/dev-owners-stats", dealStatsRoutes);
+
 
 
 

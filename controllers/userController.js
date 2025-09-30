@@ -102,9 +102,9 @@ export const sendOtp2 = async (req, res) => {
       if (phone && phone.trim() !== '') {
         const existingPhoneUser = await User.findOne({ phone });
         if (existingPhoneUser) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Phone number is already registered with another account' 
+          return res.status(400).json({
+            success: false,
+            message: 'Phone number is already registered with another account'
           });
         }
       }
@@ -124,20 +124,20 @@ export const sendOtp2 = async (req, res) => {
         // Handle duplicate key error specifically
         if (createError.code === 11000) {
           if (createError.keyPattern && createError.keyPattern.phone) {
-            return res.status(400).json({ 
-              success: false, 
-              message: 'Phone number is already registered with another account' 
+            return res.status(400).json({
+              success: false,
+              message: 'Phone number is already registered with another account'
             });
           }
           if (createError.keyPattern && createError.keyPattern.email) {
-            return res.status(400).json({ 
-              success: false, 
-              message: 'Email is already registered' 
+            return res.status(400).json({
+              success: false,
+              message: 'Email is already registered'
             });
           }
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Account with this information already exists' 
+          return res.status(400).json({
+            success: false,
+            message: 'Account with this information already exists'
           });
         }
         throw createError; // Re-throw if it's not a duplicate key error
@@ -146,24 +146,24 @@ export const sendOtp2 = async (req, res) => {
       // User exists, just update OTP
       user.otp = otp;
       user.otpExpires = otpExpires;
-      
+
       // Update other fields if provided (but be careful with phone)
       if (phone && phone.trim() !== '' && phone !== user.phone) {
         const existingPhoneUser = await User.findOne({ phone });
         if (existingPhoneUser && existingPhoneUser._id.toString() !== user._id.toString()) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Phone number is already registered with another account' 
+          return res.status(400).json({
+            success: false,
+            message: 'Phone number is already registered with another account'
           });
         }
         user.phone = phone;
       }
-      
+
       if (firstName) user.firstName = firstName;
       if (lastName) user.lastName = lastName;
       if (role) user.role = role;
       if (loyalAgent !== undefined) user.loyalAgent = loyalAgent;
-      
+
       await user.save();
     }
 
@@ -294,5 +294,91 @@ export const updateUserProfile = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+export const applyForJob = async (req, res) => {
+  try {
+    // Body fields (frontend FormData se aayenge)
+    const {
+      name,
+      appliedFor,
+      phoneNumber,
+      emailId,
+      gender,
+      submittedAt
+    } = req.body;
+
+    const file = req.file; // multer.single("resume") se aayega
+
+    // ---- Basic validation ----
+    const required = { name, appliedFor, phoneNumber, emailId, gender, submittedAt };
+    for (const [k, v] of Object.entries(required)) {
+      if (!v || String(v).trim() === '') {
+        return res.status(400).json({ success: false, message: `${k} is required` });
+      }
+    }
+    if (!file) return res.status(400).json({ success: false, message: 'resume file is required' });
+
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!allowed.includes(file.mimetype)) {
+      return res.status(400).json({ success: false, message: 'Resume must be PDF or Word' });
+    }
+
+    // ---- Email #1: Admin/HR ko with attachment ----
+    const adminHtml = `
+      <h2>New Job Application</h2>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Applied For:</b> ${appliedFor}</p>
+      <p><b>Phone:</b> ${phoneNumber}</p>
+      <p><b>Email:</b> ${emailId}</p>
+      <p><b>Gender:</b> ${gender}</p>
+      <p><b>Submitted At:</b> ${new Date(submittedAt).toLocaleString()}</p>
+      <p>Resume attached.</p>
+    `;
+
+    const adminMail = {
+      from: `Sunstar Hospitality <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER, // .env me set karein
+      subject: `New Application: ${name} - ${appliedFor}`,
+      html: adminHtml,
+      attachments: [
+        {
+          filename: file.originalname,
+          content: file.buffer,      // Multer memory buffer
+          contentType: file.mimetype
+        }
+      ]
+    };
+
+    // ---- Email #2: Applicant ko confirmation ----
+    const userHtml = `
+      <p>Hi ${name},</p>
+      <p>Thanks for applying for <b>${appliedFor}</b>. We’ve received your application and will contact you soon.</p>
+      <p>Best Regards,<br/>Team Sunstar</p>
+    `;
+    const userMail = {
+      from: `Sunstar Hospitality <${process.env.EMAIL_USER}>`,
+      to: emailId,
+      subject: `Thanks for applying — ${appliedFor}`,
+      html: userHtml
+    };
+
+    // Send both emails in parallel
+    await Promise.all([
+      transporter.sendMail(adminMail),
+      transporter.sendMail(userMail)
+    ]);
+
+
+    return res.json({ success: true, message: 'Application received & emails sent' });
+  } catch (err) {
+    console.error('applyForJob error:', err);
+    return res.status(500).json({ success: false, message: 'Server error while applying' });
   }
 };

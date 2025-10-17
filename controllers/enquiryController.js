@@ -34,11 +34,121 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: "v4", auth });
 
+// Day Use Room booking handler
+const handleDayUseRoomBooking = async (req, res) => {
+  try {
+    const {
+      selectedDate,
+      checkInTime,
+      checkOutTime,
+      paymentMethod,
+      paymentId,
+      hotel,
+      room,
+      user,
+      source
+    } = req.body;
+
+    // Save to MongoDB first
+    const enquiryData = {
+      type: 'day_use_room',
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      phone: user.phone,
+      companyName: 'Individual', // Required field - default for individual bookings
+      enquiry: `Day Use Room Booking - ${hotel.name} - ${room.name} | Date: ${selectedDate} | Time: ${checkInTime} - ${checkOutTime}`,
+      page: 'Day Use Room',
+      submittedAt: new Date()
+    };
+
+    const newEnquiry = await Enquiry.create(enquiryData);
+    console.log("Day Use Room enquiry saved to DB:", newEnquiry);
+
+    // Google Sheets integration - Day Use Room specific sheet
+    const spreadsheetId = process.env.SPREADSHEET_ID; // Main spreadsheet ID
+    const targetGid = 912856973; // Specific sheet GID for Day Use Room bookings
+
+    try {
+      const submittedDateTime = new Date().toLocaleString('en-IN');
+      
+      // Prepare row data for Google Sheets
+      const rowData = [
+        submittedDateTime, // Booking Date/Time
+        user.firstName || '',
+        // user.lastName || '',
+        user.email || '',
+        user.phone || '',
+        hotel.name || '',
+        room.name || '',
+        selectedDate || '',
+        checkInTime || '',
+        checkOutTime || '',
+        room.rate || 0,
+'Pay at Hotel', // Default payment method
+        paymentId || '',
+        'Day Use Room',
+        hotel.hotelCode || '',
+        room.roomTypeId || '',
+        source || 'website',
+        'Pending' // Status
+      ];
+
+      // Get spreadsheet metadata
+      const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+      const sheetsMetadata = spreadsheet.data.sheets;
+      
+      const sheetMeta = sheetsMetadata.find(
+        (sheet) => sheet.properties.sheetId === Number(targetGid)
+      );
+      
+      if (sheetMeta) {
+        const sheetTitle = sheetMeta.properties.title;
+        const range = `${sheetTitle}!A:R`; // A to R columns (18 columns)
+        
+        await sheets.spreadsheets.values.append({
+          spreadsheetId,
+          range,
+          valueInputOption: "USER_ENTERED",
+          requestBody: { values: [rowData] },
+        });
+        
+        console.log(`Day Use Room booking appended to sheet: ${sheetTitle}`);
+      } else {
+        console.warn(`Sheet with gid ${targetGid} not found`);
+      }
+
+      res.status(200).json({ 
+        message: "Day Use Room booking submitted successfully!",
+        bookingId: newEnquiry._id
+      });
+
+    } catch (sheetsError) {
+      console.error("Google Sheets API error for Day Use Room:", sheetsError);
+      // Still return success since data was saved to DB
+      return res.status(200).json({ 
+        message: "Day Use Room booking submitted successfully! (Note: Google Sheets sync failed)",
+        warning: "Data saved to database but not synced to Google Sheets",
+        bookingId: newEnquiry._id
+      });
+    }
+
+  } catch (error) {
+    console.error("Error in Day Use Room booking:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
 export const submitEnquiry = async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
 
     const enquiryData = req.body;
+
+    // Check if this is a Day Use Room booking
+    if (enquiryData.type === 'day_use_room') {
+      return await handleDayUseRoomBooking(req, res);
+    }
+
     const newEnquiry = await Enquiry.create(enquiryData);
 
     console.log("Enquiry saved to DB:", newEnquiry);

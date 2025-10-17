@@ -425,3 +425,120 @@ export const addContactUsDetail = async (req, res) => {
   }
 };
 
+
+
+// --- WHAT MAKES US SHINE ---
+// expects home page data in body: { heading: string, description: string, items: [{ image, heading, description }, ...3] }
+
+export const upsertWhatMakesUsShine = async (req, res) => {
+  try {
+    const { heading, description, items } = req.body || {};
+
+    // basic validation
+    if (!heading?.trim() || !description?.trim() || !Array.isArray(items) || items.length !== 3) {
+      return res.status(400).json({ error: 'heading, description, and exactly 3 items[] are required.' });
+    }
+    const invalid = items.some(it =>
+      !it?.image?.trim() || !it?.heading?.trim() || !it?.description?.trim()
+    );
+    if (invalid) {
+      return res.status(400).json({ error: 'Each item must include image, heading, and description.' });
+    }
+
+    const websiteData = await getOrCreateWebsiteData();
+    websiteData.whatMakesUsShine = { heading: heading.trim(), description: description.trim(), items };
+    await websiteData.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'WhatMakesUsShine saved successfully',
+      data: websiteData.whatMakesUsShine,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// Get the whole section
+export const getWhatMakesUsShine = async (_req, res) => {
+  try {
+    const websiteData = await getOrCreateWebsiteData();
+    return res.status(200).json(websiteData.whatMakesUsShine || null);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// Replace only items (must be exactly 3). Useful when heading/description same rehte hain.
+export const replaceWhatMakesUsShineItems = async (req, res) => {
+  try {
+    const { items } = req.body || {};
+    if (!Array.isArray(items) || items.length !== 3) {
+      return res.status(400).json({ error: 'Exactly 3 items[] are required.' });
+    }
+    const invalid = items.some(it =>
+      !it?.image?.trim() || !it?.heading?.trim() || !it?.description?.trim()
+    );
+    if (invalid) {
+      return res.status(400).json({ error: 'Each item must include image, heading, and description.' });
+    }
+
+    const websiteData = await getOrCreateWebsiteData();
+    if (!websiteData.whatMakesUsShine?.heading || !websiteData.whatMakesUsShine?.description) {
+      return res.status(400).json({ error: 'Section not initialized. Use upsertWhatMakesUsShine first.' });
+    }
+
+    websiteData.whatMakesUsShine.items = items;
+    await websiteData.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Items replaced successfully',
+      data: websiteData.whatMakesUsShine,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// Update a single item by index (0,1,2) — keeps the "exactly 3" rule intact
+export const updateWhatMakesUsShineItem = async (req, res) => {
+  try {
+    const idx = Number(req.params.index);
+    const patch = req.body || {};
+
+    if (![0, 1, 2].includes(idx)) {
+      return res.status(400).json({ error: 'index must be 0, 1, or 2.' });
+    }
+
+    const websiteData = await getOrCreateWebsiteData();
+    const section = websiteData.whatMakesUsShine;
+
+    if (!section || !Array.isArray(section.items) || section.items.length !== 3) {
+      return res.status(400).json({ error: 'Section not initialized or invalid. Use upsertWhatMakesUsShine first.' });
+    }
+
+    // apply partial updates but keep required fields non-empty
+    const target = section.items[idx] || {};
+    const updated = {
+      image: (patch.image ?? target.image)?.trim?.() || target.image,
+      heading: (patch.heading ?? target.heading)?.trim?.() || target.heading,
+      description: (patch.description ?? target.description)?.trim?.() || target.description,
+    };
+
+    if (!updated.image || !updated.heading || !updated.description) {
+      return res.status(400).json({ error: 'image, heading, description must remain non-empty.' });
+    }
+
+    section.items[idx] = updated;
+    await websiteData.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Item ${idx} updated successfully`,
+      data: section.items[idx],
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};

@@ -15,7 +15,11 @@ import {
   updateHomePageDescription,
   updateFaqs,
   addContactUsDetail,
-  saveHomePartners
+  saveHomePartners,
+  getWhatMakesUsShine,
+  upsertWhatMakesUsShine,
+  replaceWhatMakesUsShineItems,
+  updateWhatMakesUsShineItem
 } from '../controllers/websiteDataController.js';
 
 const router = express.Router();
@@ -35,6 +39,14 @@ router.post('/images', gridImages);
 router.post('/heroSection', updateHeroSection);
 router.post('/homePageDescription', updateHomePageDescription);
 router.put('/home-partners', saveHomePartners);
+
+
+router.get('/what-makes-us-shine', getWhatMakesUsShine);
+router.post('/what-makes-us-shine', upsertWhatMakesUsShine); // create/update whole section
+router.put('/what-makes-us-shine/items', replaceWhatMakesUsShineItems); // replace all 3
+router.post('/what-makes-us-shine/items/:index', updateWhatMakesUsShineItem); // update single item
+
+
 
 
 

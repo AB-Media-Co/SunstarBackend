@@ -88,11 +88,35 @@ const HomePageDescriptionsSchema = new Schema(
     }
   }
 )
+
+
+
 const HomePartnersSchema = new Schema({
   heading: { type: String, trim: true },             // e.g., "Our Partners"
   subheading: { type: String, trim: true },          // optional subtitle
   logos: [PartnerLogoSchema],                         // array of logos
   layout: { type: String, enum: ['grid', 'carousel'], default: 'grid' } // optional layout hint
+});
+
+
+
+const ShineItemSchema = new Schema({
+  image: { type: String, required: true, trim: true },
+  heading: { type: String, required: true, trim: true },
+  description: { type: String, required: true, trim: true },
+});
+
+// (2) Parent section schema
+const WhatMakesUsShineSchema = new Schema({
+  heading: { type: String, required: true, trim: true },      // main heading
+  description: { type: String, required: true, trim: true },  // main description
+  items: {
+    type: [ShineItemSchema],
+    validate: [
+      (arr) => Array.isArray(arr) && arr.length === 3,
+      'Exactly 3 items are required in WhatMakesUsShine.items',
+    ],
+  },
 });
 
 
@@ -273,6 +297,8 @@ const WebsiteDataSchema = new Schema(
     ContactUsDetail: ContactUsDetailSchema,
     faqs: [FaqSchema],
     HomePartners: HomePartnersSchema,
+    whatMakesUsShine: WhatMakesUsShineSchema,
+
   }
 );
 

@@ -1,1 +1,0 @@
-import{j as e,F as t}from"./index-DRfTjNMi.js";const r=()=>e.jsx("div",{className:"relative flex  flex-col justify-between content items-center mt-10 py-10  z-0",children:e.jsx(t,{})});export{r as default};

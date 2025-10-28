@@ -1,0 +1,28 @@
+# ============================================
+# robots.txt for hotelsunstargroup.com
+# Last updated: 28 Oct 2025
+# ============================================
+
+# By default, allow all crawlers full access to the site
+User-agent: *
+Disallow:
+
+# --------------------------------------------
+# Examples for future use:
+# To block a specific folder:
+# Disallow: /private/
+
+# To block a specific page:
+# Disallow: /example-page.html
+
+# To block multiple pages with the same prefix:
+# Disallow: /temp*
+
+# To block a specific bot only:
+# User-agent: BadBot
+# Disallow: /
+
+# --------------------------------------------
+# Sitemap locations
+Sitemap: https://hotelsunstargroup.com/sitemap.xml
+Sitemap: https://hotelsunstargroup.com/sitemap_index.xml

@@ -7,6 +7,29 @@
 User-agent: *
 Disallow:
 
+# Blocked pages
+Disallow: /admin/hotels
+Disallow: /admin/rooms
+Disallow: /admin/hotel-locations
+Disallow: /admin/offers
+Disallow: /admin/pages
+Disallow: /admin/venue-management
+Disallow: /admin/manage-seo
+Disallow: /admin/manage-blogs
+Disallow: /admin/all-users
+Disallow: /user/profile
+Disallow: /admin/login
+Disallow: /booking-form
+Disallow: /travel-booking-form
+Disallow: /my-bookings
+Disallow: /thankyou
+Disallow: /room/details
+Disallow: /admin/hotels/add
+Disallow: /admin/create_user
+Disallow: /admin/view-user
+Disallow: /admin/jobs
+Disallow: /admin/day-use-room
+
 # --------------------------------------------
 # Examples for future use:
 # To block a specific folder:

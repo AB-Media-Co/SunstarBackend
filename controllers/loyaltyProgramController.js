@@ -1,6 +1,6 @@
 // controllers/loyaltyProgramController.js
 
-import LoyaltyProgram from "../models/LoyaltyProgram.js";
+import LoyaltyProgram from "../models/loyaltyProgram.js";
 
 const PAGE_SLUG = 'loyalty-program';
 

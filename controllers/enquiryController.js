@@ -234,6 +234,7 @@ export const submitHotelData = async (req, res) => {
   try {
     const {
       hotelCode,
+      AuthCode,
       Hoteldata,
       checkIn,
       checkOut,
@@ -266,10 +267,13 @@ export const submitHotelData = async (req, res) => {
 
     await Promise.all(dbSavePromises);
 
-    // Then try to append to Google Sheets
+    // Then append to Google Sheets with all details
     try {
+      const submittedDateTime = new Date().toLocaleString('en-IN');
       const rows = selectedRooms.map((room) => [
+        submittedDateTime,
         hotelCode,
+        AuthCode || '',
         Hoteldata,
         checkIn,
         checkOut,
@@ -295,7 +299,7 @@ export const submitHotelData = async (req, res) => {
       }
 
       const sheetTitle = sheetMeta.properties.title;
-      const range = `${sheetTitle}!A:K`;
+      const range = `${sheetTitle}!A:M`;
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
@@ -304,6 +308,7 @@ export const submitHotelData = async (req, res) => {
         requestBody: { values: rows },
       });
 
+      console.log(`Booking data appended to sheet: ${sheetTitle}`);
       res.status(200).json({ message: "Data saved to Google Sheet and Database successfully." });
     } catch (sheetsError) {
       console.error("Google Sheets error:", sheetsError);

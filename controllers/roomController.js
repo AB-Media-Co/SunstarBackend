@@ -46,6 +46,11 @@ const processGroupedRoomData = (roomList) => {
       roomrateunkid: room.roomrateunkid,
       min_available_rooms: minAvailable,
       min_exclusive_tax: minExclusiveTax,
+      // ✅ Include eZee extra charges data
+      base_adult_occupancy: room.base_adult_occupancy,
+      max_adult_occupancy: room.max_adult_occupancy,
+      extra_adult_rates_info: room.extra_adult_rates_info,
+      extra_child_rates_info: room.extra_child_rates_info,
     };
 
     const cur = grouped[key];
@@ -101,6 +106,7 @@ export const getSyncedRooms = async (req, res) => {
 
     const response = await axios.get(url, { timeout: 20000, decompress: true });
     const roomList = response.data;
+    // console.log(roomList,"room list")
 
     // 2) Group rooms by Roomtype_Name and find min rate & availability
     const grouped = Object.create(null);
@@ -121,6 +127,11 @@ export const getSyncedRooms = async (req, res) => {
         roomrateunkid: room.roomrateunkid,
         min_available_rooms: minAvailable,
         min_exclusive_tax: minExclusiveTax,
+        // ✅ Include eZee extra charges data
+        base_adult_occupancy: room.base_adult_occupancy,
+        max_adult_occupancy: room.max_adult_occupancy,
+        extra_adult_rates_info: room.extra_adult_rates_info,
+        extra_child_rates_info: room.extra_child_rates_info,
       };
 
       const cur = grouped[key];
@@ -168,6 +179,10 @@ export const getSyncedRooms = async (req, res) => {
         Availability: room.min_available_rooms,
         discountRate: room.min_exclusive_tax,
         maxGuests: parseInt(room.Room_Max_adult) || 1,
+        baseAdultOccupancy: parseInt(room.base_adult_occupancy) || 2,
+        maxAdultOccupancy: parseInt(room.max_adult_occupancy) || 3,
+        extraAdultRate: parseFloat(room.extra_adult_rates_info?.rack_rate) || 0,
+        extraChildRate: parseFloat(room.extra_child_rates_info?.rack_rate) || 0,
 
         RoomImage: roomDetails?.RoomImage || [],
         RoomDescription: roomDetails?.RoomDescription,

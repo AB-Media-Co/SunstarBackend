@@ -23,6 +23,10 @@ const RoomSchema = new mongoose.Schema({
   defaultRate: { type: Number, min: 0 },
   discountRate: { type: Number, min: 0 },
   maxGuests: { type: Number, min: 1 }, // Ensure positive numbers
+  baseAdultOccupancy: { type: Number, default: 2 }, // From eZee: base_adult_occupancy
+  maxAdultOccupancy: { type: Number, default: 3 }, // From eZee: max_adult_occupancy
+  extraAdultRate: { type: Number, min: 0, default: 0 }, // From eZee: extra_adult_rates_info.rack_rate
+  extraChildRate: { type: Number, min: 0, default: 0 }, // From eZee: extra_child_rates_info.rack_rate
   squareFeet: { type: Number, min: 0 },
   show: { type: Boolean, default: false },
 }, {

@@ -5,7 +5,7 @@ import Hotel from '../models/Hotel.js';
 export const getRoomAndHotelDetails = async (req, res) => {
   try {
     const { roomId, hotelCode } = req.query;
-    console.log(roomId, hotelCode);
+    // console.log(roomId, hotelCode);
     
     if (!roomId || !hotelCode) {
       return res.status(400).json({ message: 'roomId and hotelCode are required.' });

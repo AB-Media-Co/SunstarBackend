@@ -3,29 +3,35 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 
                             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!--   created with Free Online Sitemap Generator www.xml-sitemaps.com   -->
+  <!-- created with corrected slugs for SEO readability -->
+  
   <url>
     <loc>https://hotelsunstargroup.com/sunstar-blogs</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
+
   <url>
-    <loc>https://hotelsunstargroup.com/sunstar-blogs/Udaipur%20Sunrise%20%26%20Sunset%20Spots%20You%20Must%20Witness</loc>
+    <loc>https://hotelsunstargroup.com/sunstar-blogs/udaipur-sunrise-and-sunset-spots-you-must-witness</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
+
   <url>
-    <loc>https://hotelsunstargroup.com/sunstar-blogs/Best%20One%20Day%20Delhi%20Tour%20Guide%202025%20%7C%20Places,%20Food%20%26%20Tips</loc>
+    <loc>https://hotelsunstargroup.com/sunstar-blogs/best-one-day-delhi-tour-guide-2025-places-food-and-tips</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
+
   <url>
-    <loc>https://hotelsunstargroup.com/sunstar-blogs/Why%20International%20Guests%20Prefer%20Hotel%20Sunstar%20Group%20Over%20Others</loc>
+    <loc>https://hotelsunstargroup.com/sunstar-blogs/why-international-guests-prefer-hotel-sunstar-group-over-others</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
+
   <url>
-    <loc>https://hotelsunstargroup.com/sunstar-blogs/Best%20Food%20Places%20to%20Eat%20in%20Chennai</loc>
+    <loc>https://hotelsunstargroup.com/sunstar-blogs/best-food-places-to-eat-in-chennai</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
+
   <url>
-    <loc>https://hotelsunstargroup.com/sunstar-blogs/Hospitality%20That%20Feels%20Like%20Home%20%E2%80%93%20Hotel%20Sunstar%20Experience</loc>
+    <loc>https://hotelsunstargroup.com/sunstar-blogs/hospitality-that-feels-like-home-hotel-sunstar-experience</loc>
     <lastmod>2025-10-28T09:42:13+00:00</lastmod>
   </url>
 </urlset>

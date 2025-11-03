@@ -217,6 +217,6 @@ app.get('*', (req, res) => {
 // Server setup
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on ports ${PORT}`);
   console.log(`Media files served from: ${MEDIA_DIR}`);
 });

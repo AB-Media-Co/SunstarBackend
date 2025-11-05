@@ -29,10 +29,12 @@ import venueRoutes from './routes/venueRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import mediaRoutes from './routes/mediaRoutes.js';
 import partnerRoutes from './routes/partnerRoutes.js';
-import venueLocation from './routes/venueLocation.js ';
+import venueLocation from './routes/venueLocation.js';
 import dealStatsRoutes from './routes/dealStatsRoutes.js';
 import policyRoutes from './routes/policyRoutes.js';
-import loyaltyProgramRoutes from './routes/loyaltyProgramRoutes.js';
+import careerRoutes from './routes/careerRoutes.js';
+import travelAgentRoutes from './routes/travelAgentRoutes.js';
+import eventPageRoutes from './routes/eventPageRoutes.js';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
@@ -193,10 +195,9 @@ app.use('/api/partners', partnerRoutes);
 app.use('/api/venue-locations', venueLocation);
 app.use("/api/dev-owners-stats", dealStatsRoutes);
 app.use('/api/policy', policyRoutes);
-app.use('/api', loyaltyProgramRoutes);
-
-
-
+app.use('/api/careers', careerRoutes);
+app.use('/api/travel-agent', travelAgentRoutes);
+app.use('/api/event-pages', eventPageRoutes);
 
 
 

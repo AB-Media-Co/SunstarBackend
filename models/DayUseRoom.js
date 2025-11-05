@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const TimeSlotSchema = new mongoose.Schema({
-  timeSlot: { type: String, required: true }, // e.g., "09:00 AM - 12:00 PM"
+  timeSlot: { type: String, required: true },
   rate: { type: Number, required: true },
   availability: { type: Number, default: 0 }
 }, { _id: false });

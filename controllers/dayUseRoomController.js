@@ -6,10 +6,10 @@ import DayUseRoom from '../models/DayUseRoom.js';
 
 
 const roomTypeMap = {
-  "14492": "Value Room",
-  "14494": "Superior Room",
-  "14496": "Standard Room",
-  "14493": "Deluxe Room"
+  "14492": ["Value Room"],
+  "14494": ["Superior Room"],
+  "14496": ["Standard Room"],
+  "14493": ["Family Room", "Deluxe Room"]  // ✅ multiple allowed
 };
 
 
@@ -32,12 +32,12 @@ export const getDayUseRooms = async (req, res) => {
     for (const hotel of hotels) {
       if (!hotel.isDayUseRoom) continue;
 
-      const roomType = roomTypeMap[hotel.hotelCode.toString()];
-
+      const roomTypes = roomTypeMap[hotel.hotelCode.toString()] || [];
       const standardRoom = await Room.findOne({
         HotelCode: hotel.hotelCode.toString(),
-        RoomName: roomType
-      })
+        RoomName: { $in: roomTypes }   // ✅ match any room in list
+      });
+
       if (!standardRoom) continue;
 
       const fullDayRate = Number((standardRoom.discountRate * 0.6).toFixed(2));
@@ -96,8 +96,6 @@ export const getDayUseRooms = async (req, res) => {
   }
 };
 
-
-
 export const getMonthlyDayUseData = async (req, res) => {
   try {
     const { month, hotelCode } = req.query;
@@ -136,6 +134,7 @@ export const getMonthlyDayUseData = async (req, res) => {
       }
 
       hotels.push(hotel);
+      console.log(hotel)
     } else {
       hotels = await Hotel.find({ isDayUseRoom: true });
     }
@@ -248,7 +247,6 @@ export const getMonthlyDayUseData = async (req, res) => {
 };
 
 
-
 export const updateDayUseAvailability = async (req, res) => {
   try {
     const { hotelCode, roomName, date, timeSlot, availability } = req.body;
@@ -308,7 +306,6 @@ export const updateDayUseAvailability = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 
 
 export const bulkUpdateDayUseAvailability = async (req, res) => {
@@ -389,5 +386,115 @@ export const bulkUpdateDayUseAvailability = async (req, res) => {
   } catch (error) {
     console.error('Error in bulk availability update:', error);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+const DEFAULT_TIMESLOT = 'Full Day';
+
+export const bookDayUseSlot = async (req, res) => {
+  try {
+    const { hotelCode, roomName, date, qty = 1, timeSlot = DEFAULT_TIMESLOT } = req.body;
+
+    if (!hotelCode || !roomName || !date || qty <= 0) {
+      return res.status(400).json({ error: 'hotelCode, roomName, date, and positive qty are required' });
+    }
+
+    const inputDate = new Date(date);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (inputDate < today) return res.status(400).json({ error: 'Past dates not allowed' });
+
+    const hotel = await Hotel.findOne({ hotelCode });
+    if (!hotel) return res.status(404).json({ error: 'Hotel not found' });
+    if (!hotel.isDayUseRoom) return res.status(400).json({ error: 'This hotel is not available for day use' });
+
+    const room = await Room.findOne({ HotelCode: hotelCode, RoomName: roomName });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    const cleanDate = date.split('T')[0];
+
+    // Atomic decrement only if enough availability exists
+    const updated = await DayUseRoom.findOneAndUpdate(
+      {
+        hotel: hotel._id,
+        room: room._id,
+        date: cleanDate,
+        'slots.timeSlot': timeSlot,
+        // guard: availability >= qty
+        // NOTE: positional $ works only when matching same element
+        // we check using this condition on the same matched slot
+        'slots.availability': { $gte: qty }
+      },
+      { $inc: { 'slots.$.availability': -qty } },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(409).json({
+        error: 'Not enough availability or slot not found',
+        details: { hotelCode, roomName, date: cleanDate, timeSlot, qty }
+      });
+    }
+
+    const slot = updated.slots.find(s => s.timeSlot === timeSlot);
+    return res.status(200).json({
+      message: 'Booked successfully: availability decremented',
+      remainingAvailability: slot?.availability ?? 0,
+      dayUse: updated
+    });
+
+  } catch (err) {
+    console.error('Error in bookDayUseSlot:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+export const cancelDayUseSlot = async (req, res) => {
+  try {
+    const { hotelCode, roomName, date, qty = 1, timeSlot = DEFAULT_TIMESLOT } = req.body;
+
+    if (!hotelCode || !roomName || !date || qty <= 0) {
+      return res.status(400).json({ error: 'hotelCode, roomName, date, and positive qty are required' });
+    }
+
+    const inputDate = new Date(date);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (inputDate < today) return res.status(400).json({ error: 'Past dates not allowed' });
+
+    const hotel = await Hotel.findOne({ hotelCode });
+    if (!hotel) return res.status(404).json({ error: 'Hotel not found' });
+    if (!hotel.isDayUseRoom) return res.status(400).json({ error: 'This hotel is not available for day use' });
+
+    const room = await Room.findOne({ HotelCode: hotelCode, RoomName: roomName });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    const cleanDate = date.split('T')[0];
+
+    // Atomic increment on the matched slot
+    const updated = await DayUseRoom.findOneAndUpdate(
+      {
+        hotel: hotel._id,
+        room: room._id,
+        date: cleanDate,
+        'slots.timeSlot': timeSlot
+      },
+      { $inc: { 'slots.$.availability': +qty } },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Day use entry or slot not found' });
+    }
+
+    const slot = updated.slots.find(s => s.timeSlot === timeSlot);
+    return res.status(200).json({
+      message: 'Cancelled successfully: availability incremented',
+      currentAvailability: slot?.availability ?? 0,
+      dayUse: updated
+    });
+
+  } catch (err) {
+    console.error('Error in cancelDayUseSlot:', err);
+    return res.status(500).json({ error: err.message });
   }
 };

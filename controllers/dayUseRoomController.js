@@ -6,10 +6,10 @@ import DayUseRoom from '../models/DayUseRoom.js';
 
 
 const roomTypeMap = {
-  "14492": ["Value Room"],
-  "14494": ["Superior Room"],
+  "14492": ["Standard Room"],
+  "14494": ["Standard Room"],
   "14496": ["Standard Room"],
-  "14493": ["Family Room", "Deluxe Room"]  // ✅ multiple allowed
+  "14493": ["Standard Room", "Family Room"]  // ✅ multiple allowed
 };
 
 

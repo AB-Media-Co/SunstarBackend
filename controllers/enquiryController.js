@@ -172,20 +172,31 @@ export const submitEnquiry = async (req, res) => {
     // Split submittedAt into date and time
     const submittedDate = newEnquiry.submittedAt.toLocaleDateString('en-IN');
     const submittedTime = newEnquiry.submittedAt.toLocaleTimeString('en-IN');
-    const dateToUse = enquiryData.date || submittedDate;
 
-    const values = [[
-      enquiryData.page,
-      enquiryData.name,
-      enquiryData.email,
-      enquiryData.phone,
-      enquiryData.companyName,
-      enquiryData.enquiry,
-      dateToUse,
-      submittedTime,
-      enquiryData.address,
-      enquiryData.decisionMaker,
-    ]];
+    // Dynamic field extraction - collect all fields except system fields
+    const systemFields = ['_id', '__v', 'gid', 'submittedAt', 'createdAt', 'updatedAt'];
+    const rowData = [];
+    
+    // Get all keys from enquiryData and filter out system fields
+    const fieldKeys = Object.keys(enquiryData).filter(key => !systemFields.includes(key));
+    
+    // Add submitted date and time first
+    rowData.push(submittedDate, submittedTime);
+    
+    // Add all other fields dynamically
+    fieldKeys.forEach(key => {
+      const value = enquiryData[key];
+      // Convert objects/arrays to string, handle null/undefined
+      if (value === null || value === undefined) {
+        rowData.push('');
+      } else if (typeof value === 'object') {
+        rowData.push(JSON.stringify(value));
+      } else {
+        rowData.push(String(value));
+      }
+    });
+
+    const values = [rowData];
 
     try {
       // Get spreadsheet metadata
@@ -200,7 +211,21 @@ export const submitEnquiry = async (req, res) => {
         
         if (sheetMeta) {
           const sheetTitle = sheetMeta.properties.title;
-          const range = `${sheetTitle}!A:J`; // Updated range to match 10 columns
+          
+          // Dynamic range based on number of fields
+          // Calculate column letter (A=1, B=2, ... Z=26, AA=27, etc)
+          const numColumns = rowData.length;
+          const getColumnLetter = (n) => {
+            let result = '';
+            while (n > 0) {
+              n--;
+              result = String.fromCharCode((n % 26) + 65) + result;
+              n = Math.floor(n / 26);
+            }
+            return result;
+          };
+          const lastColumn = getColumnLetter(numColumns);
+          const range = `${sheetTitle}!A:${lastColumn}`;
           
           await sheets.spreadsheets.values.append({
             spreadsheetId,
@@ -209,7 +234,7 @@ export const submitEnquiry = async (req, res) => {
             requestBody: { values },
           });
           
-          console.log(`Data appended to sheet: ${sheetTitle}`);
+          console.log(`Data appended to sheet: ${sheetTitle} (${numColumns} columns: A-${lastColumn})`);
         } else {
           console.warn(`Sheet with gid ${gid} not found`);
         }

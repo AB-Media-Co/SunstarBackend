@@ -35,6 +35,7 @@ import policyRoutes from './routes/policyRoutes.js';
 import careerRoutes from './routes/careerRoutes.js';
 import travelAgentRoutes from './routes/travelAgentRoutes.js';
 import eventPageRoutes from './routes/eventPageRoutes.js';
+import loyaltyProgramRoutes from './routes/loyaltyProgramRoutes.js';
 
 import { pushBooking,getBookingList } from './controllers/pushBookingController.js';
 
@@ -198,6 +199,7 @@ app.use('/api/policy', policyRoutes);
 app.use('/api/careers', careerRoutes);
 app.use('/api/travel-agent', travelAgentRoutes);
 app.use('/api/event-pages', eventPageRoutes);
+app.use('/api/loyalty', loyaltyProgramRoutes);
 
 
 

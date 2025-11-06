@@ -134,24 +134,30 @@ export const updateShineSection = async (req, res) => {
   try {
     const { heading, description, features } = req.body;
 
-    if (!heading || !description || !Array.isArray(features) || features.length === 0) {
-      return res.status(400).json({ error: 'Heading, description, and features are required.' });
+    if (!heading || !description) {
+      return res.status(400).json({ error: 'Heading and description are required.' });
     }
 
-    const invalidFeatures = features.some(feature => !feature.title || !feature.description || !feature.image);
-    if (invalidFeatures) {
-      return res.status(400).json({ error: 'Each feature must have a name, description, and image.' });
-    }
+    // Flexible - allow any number of features, allow empty fields
+    const processedFeatures = Array.isArray(features) ? features.map(feature => ({
+      title: feature.title || '',
+      description: feature.description || '',
+      image: feature.image || ''
+    })) : [];
 
-    const websiteData = await WebsiteData.findOne();
+    let websiteData = await WebsiteData.findOne();
     if (!websiteData) {
-      return res.status(404).json({ error: 'Website data not found.' });
+      websiteData = new WebsiteData();
     }
 
-    websiteData.shineSection = { heading, description, features };
+    websiteData.shineSection = { heading, description, features: processedFeatures };
     await websiteData.save();
 
-    res.json(websiteData);
+    res.status(200).json({
+      success: true,
+      message: 'Shine Section updated successfully',
+      data: websiteData.shineSection
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -434,19 +440,24 @@ export const upsertWhatMakesUsShine = async (req, res) => {
   try {
     const { heading, description, items } = req.body || {};
 
-    // basic validation
+    // basic validation - relaxed to allow empty fields
     if (!heading?.trim() || !description?.trim() || !Array.isArray(items) || items.length !== 3) {
       return res.status(400).json({ error: 'heading, description, and exactly 3 items[] are required.' });
     }
-    const invalid = items.some(it =>
-      !it?.image?.trim() || !it?.heading?.trim() || !it?.description?.trim()
-    );
-    if (invalid) {
-      return res.status(400).json({ error: 'Each item must include image, heading, and description.' });
-    }
+
+    // Allow empty fields - just ensure each item exists and has the properties
+    const processedItems = items.map(it => ({
+      image: it?.image?.trim() || '',
+      heading: it?.heading?.trim() || '',
+      description: it?.description?.trim() || ''
+    }));
 
     const websiteData = await getOrCreateWebsiteData();
-    websiteData.whatMakesUsShine = { heading: heading.trim(), description: description.trim(), items };
+    websiteData.whatMakesUsShine = { 
+      heading: heading.trim(), 
+      description: description.trim(), 
+      items: processedItems 
+    };
     await websiteData.save();
 
     return res.status(200).json({

@@ -5,7 +5,7 @@ import getUserModel from '../models/User.js';
 export const pushBooking = async (req, res) => {
   try {
     const { HotelCode, APIKey, BookingData, userEmail } = req.body;
-    
+    console.log(BookingData,"booking Data")
 
     if (!HotelCode || !APIKey || !BookingData || !userEmail) {
       console.warn("❌ Missing fields:", { HotelCode, APIKey, BookingData, userEmail });

@@ -12,15 +12,15 @@ import {
 const router = express.Router();
 
 // Public read
-router.get('/loyalty', getLoyalty);
+router.get('/', getLoyalty);
 
 // Upsert full page
-router.put('/loyalty', upsertLoyalty);
+router.put('/', upsertLoyalty);
 
 // Tier CRUD
-router.post('/loyalty/tiers', addTier);
-router.put('/loyalty/tiers/:level', updateTierByLevel);
-router.delete('/loyalty/tiers/:level', deleteTierByLevel);
+router.post('/tiers', addTier);
+router.put('/tiers/:level', updateTierByLevel);
+router.delete('/tiers/:level', deleteTierByLevel);
 
 // Seed (dev)
 router.post('/seed/loyalty', seedLoyalty);

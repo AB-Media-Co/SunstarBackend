@@ -1,48 +1,34 @@
 import express from 'express';
 import {
-  getEventPageByType,
   getAllEventPages,
+  getEventPageBySlug,
   createEventPage,
-  updateEventPage,
+  updateEventPageBySlug,
   updateEventPageSection,
-  deleteEventPage,
-  addEventCard,
-  removeEventCard,
-  addFeature,
-  removeFeature,
-  patchInnerHero, patchOverview, patchCelebrationTypesMeta,
-  addCelebrationItem, updateCelebrationItem, deleteCelebrationItem
-
+  deleteEventPageBySlug,
+  toggleEventPageStatus,
 } from '../controllers/eventPageController.js';
 
 const router = express.Router();
 
-// Public routes
+// Public routes (for frontend to fetch data)
 router.get('/', getAllEventPages);
-router.get('/:pageType', getEventPageByType);
-
-// Protected Admin routes
-router.post('/', createEventPage);
-router.put('/:pageType', updateEventPage);
-router.patch('/:pageType/section/:sectionName', updateEventPageSection);
-router.delete('/:pageType', deleteEventPage);
+router.get('/:slug', getEventPageBySlug);
 
 
-router.patch('/:pageType/inner-hero',  patchInnerHero);
-router.patch('/:pageType/overview',  patchOverview);
-router.patch('/:pageType/celebration-types',  patchCelebrationTypesMeta);
+// Create new event page
+router.post('/', /* protect, restrictToRole(['admin', 'superadmin']), */ createEventPage);
 
-router.post('/:pageType/celebration-types/items',  addCelebrationItem);
-router.put('/:pageType/celebration-types/items/:itemId',  updateCelebrationItem);
-router.delete('/:pageType/celebration-types/items/:itemId',  deleteCelebrationItem);
+// Update entire event page
+router.put('/:slug', /* protect, restrictToRole(['admin', 'superadmin']), */ updateEventPageBySlug);
 
+// Update specific section of event page
+router.patch('/:slug/section/:section', /* protect, restrictToRole(['admin', 'superadmin']), */ updateEventPageSection);
 
-// Event cards management
-router.post('/:pageType/events', addEventCard);
-router.delete('/:pageType/events/:cardIndex', removeEventCard);
+// Toggle active status
+router.patch('/:slug/toggle-status', /* protect, restrictToRole(['admin', 'superadmin']), */ toggleEventPageStatus);
 
-// Features management
-router.post('/:pageType/features', addFeature);
-router.delete('/:pageType/features/:featureIndex', removeFeature);
+// Delete event page
+router.delete('/:slug', /* protect, restrictToRole(['admin', 'superadmin']), */ deleteEventPageBySlug);
 
 export default router;

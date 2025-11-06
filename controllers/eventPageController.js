@@ -1,357 +1,254 @@
 import EventPage from '../models/EventPage.js';
 
-/* -------------------------- PUBLIC READ -------------------------- */
-
-export const getEventPageByType = async (req, res) => {
+// Get all event pages
+export const getAllEventPages = async (req, res) => {
   try {
-    const { pageType } = req.params;
-    const eventPage = await EventPage.findOne({ pageType, isActive: true });
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-    }
-    res.status(200).json({ success: true, data: eventPage });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error fetching event page', error: error.message });
-  }
-};
-
-export const getAllEventPages = async (_req, res) => {
-  try {
-    const eventPages = await EventPage.find({ isActive: true });
-    res.status(200).json({ success: true, total: eventPages.length, data: eventPages });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error fetching event pages', error: error.message });
-  }
-};
-
-/* -------------------------- CREATE / UPDATE -------------------------- */
-
-export const createEventPage = async (req, res) => {
-  try {
-    const {
-      pageType,
-      heroSection,
-      heroDescription,
-      ourEventsSection,
-      celebrationsSection,
-      mainEventSection,
-      personalisedSection,
-      introductionSection,
-      meta,
-      // NEW (optional on create)
-      innerHero,
-      overview,
-      celebrationTypes
-    } = req.body;
-
-    if (!pageType) {
-      return res.status(400).json({ success: false, message: 'pageType is required' });
-    }
-
-    const existingPage = await EventPage.findOne({ pageType });
-    if (existingPage) {
-      return res.status(400).json({ success: false, message: `Event page with pageType '${pageType}' already exists` });
-    }
-
-    const newEventPage = await EventPage.create({
-      pageType,
-      heroSection,
-      heroDescription,
-      ourEventsSection,
-      celebrationsSection,
-      mainEventSection,
-      personalisedSection,
-      introductionSection,
-      meta,
-      innerHero,
-      overview,
-      celebrationTypes
-    });
-
-    res.status(201).json({ success: true, message: 'Event page created successfully', data: newEventPage });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error creating event page', error: error.message });
-  }
-};
-
-export const updateEventPage = async (req, res) => {
-  try {
-    const { pageType } = req.params;
-    const updates = req.body;
-
-    if (updates.pageType && updates.pageType !== pageType) {
-      return res.status(400).json({ success: false, message: 'Cannot change pageType' });
-    }
-
-    const eventPage = await EventPage.findOneAndUpdate(
-      { pageType },
-      { ...updates, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    );
-
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-    }
-
-    res.status(200).json({ success: true, message: 'Event page updated successfully', data: eventPage });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error updating event page', error: error.message });
-  }
-};
-
-/* -------------------------- GENERIC SECTION PATCH -------------------------- */
-
-export const updateEventPageSection = async (req, res) => {
-  try {
-    const { pageType, sectionName } = req.params;
-    const sectionData = req.body;
-
-    const allowedSections = [
-      // landing
-      'heroSection',
-      'heroDescription',
-      'ourEventsSection',
-      'celebrationsSection',
-      'mainEventSection',
-      'personalisedSection',
-      'introductionSection',
-      'meta',
-      // NEW inner pages
-      'innerHero',
-      'overview',
-      'celebrationTypes'
-    ];
-
-    if (!allowedSections.includes(sectionName)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid section name. Allowed sections: ${allowedSections.join(', ')}`
-      });
-    }
-
-    const eventPage = await EventPage.findOneAndUpdate(
-      { pageType },
-      { [sectionName]: sectionData, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    );
-
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-    }
-
+    const { active } = req.query;
+    const filter = active !== undefined ? { active: active === 'true' } : {};
+    
+    const pages = await EventPage.find(filter).sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
-      message: `Section '${sectionName}' updated successfully`,
-      data: eventPage
+      count: pages.length,
+      data: pages,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error updating event page section', error: error.message });
+    console.error('Error fetching event pages:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch event pages',
+      error: error.message,
+    });
   }
 };
 
-/* -------------------------- DELETE PAGE -------------------------- */
-
-export const deleteEventPage = async (req, res) => {
+// Get single event page by slug
+export const getEventPageBySlug = async (req, res) => {
   try {
-    const { pageType } = req.params;
-    const eventPage = await EventPage.findOneAndDelete({ pageType });
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
+    const { slug } = req.params;
+    
+    const page = await EventPage.findOne({ pageSlug: slug.toLowerCase() });
+    
+    if (!page) {
+      return res.status(404).json({
+        success: false,
+        message: `Event page with slug '${slug}' not found`,
+      });
     }
-    res.status(200).json({ success: true, message: 'Event page deleted successfully' });
+    
+    res.status(200).json({
+      success: true,
+      data: page,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error deleting event page', error: error.message });
+    console.error('Error fetching event page:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch event page',
+      error: error.message,
+    });
   }
 };
 
-/* -------------------------- LANDING CARD/FEATURE HELPERS -------------------------- */
-
-export const addEventCard = async (req, res) => {
+// Create new event page
+export const createEventPage = async (req, res) => {
   try {
-    const { pageType } = req.params;
-    const { title, description, image, link } = req.body;
-
-    if (!title || !description || !image || !link) {
-      return res.status(400).json({ success: false, message: 'title, description, image, and link are required' });
+    const eventPageData = req.body;
+    
+    // Check if page with same slug already exists
+    const existingPage = await EventPage.findOne({ pageSlug: eventPageData.pageSlug?.toLowerCase() });
+    if (existingPage) {
+      return res.status(400).json({
+        success: false,
+        message: `Event page with slug '${eventPageData.pageSlug}' already exists`,
+      });
     }
+    
+    const newPage = new EventPage(eventPageData);
+    const savedPage = await newPage.save();
+    
+    res.status(201).json({
+      success: true,
+      message: 'Event page created successfully',
+      data: savedPage,
+    });
+  } catch (error) {
+    console.error('Error creating event page:', error);
+    res.status(400).json({
+      success: false,
+      message: 'Failed to create event page',
+      error: error.message,
+    });
+  }
+};
 
-    const eventPage = await EventPage.findOneAndUpdate(
-      { pageType },
-      { $push: { 'ourEventsSection.cards': { title, description, image, link } }, updatedAt: new Date() },
-      { new: true, runValidators: true }
+// Update event page by slug
+export const updateEventPageBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const updateData = req.body;
+    
+    // Don't allow changing pageSlug through update
+    delete updateData.pageSlug;
+    
+    const updatedPage = await EventPage.findOneAndUpdate(
+      { pageSlug: slug.toLowerCase() },
+      updateData,
+      { 
+        new: true, 
+        runValidators: true 
+      }
     );
-
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
+    
+    if (!updatedPage) {
+      return res.status(404).json({
+        success: false,
+        message: `Event page with slug '${slug}' not found`,
+      });
     }
-
-    res.status(200).json({ success: true, message: 'Event card added successfully', data: eventPage });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Event page updated successfully',
+      data: updatedPage,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error adding event card', error: error.message });
+    console.error('Error updating event page:', error);
+    res.status(400).json({
+      success: false,
+      message: 'Failed to update event page',
+      error: error.message,
+    });
   }
 };
 
-export const removeEventCard = async (req, res) => {
+// Update specific section of event page
+export const updateEventPageSection = async (req, res) => {
   try {
-    const { pageType, cardIndex } = req.params;
-    const eventPage = await EventPage.findOne({ pageType });
-    if (!eventPage) return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-
-    const index = parseInt(cardIndex, 10);
-    if (Number.isNaN(index) || index < 0 || index >= eventPage.ourEventsSection.cards.length) {
-      return res.status(400).json({ success: false, message: 'Invalid card index' });
+    const { slug, section } = req.params;
+    let sectionData = req.body;
+    
+    const page = await EventPage.findOne({ pageSlug: slug.toLowerCase() });
+    
+    if (!page) {
+      return res.status(404).json({
+        success: false,
+        message: `Event page with slug '${slug}' not found`,
+      });
     }
-
-    eventPage.ourEventsSection.cards.splice(index, 1);
-    await eventPage.save();
-
-    res.status(200).json({ success: true, message: 'Event card removed successfully', data: eventPage });
+    
+    // Validate section name
+    const validSections = ['heroSection', 'ourEvents', 'celebrationsSeamless', 'descriptionText', 'celebrationTypes', 'meta'];
+    if (!validSections.includes(section)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid section name. Valid sections: ${validSections.join(', ')}`,
+      });
+    }
+    
+    // Check if section is valid for page type
+    if (page.pageType === 'parent' && ['descriptionText', 'celebrationTypes'].includes(section)) {
+      return res.status(400).json({
+        success: false,
+        message: `Section '${section}' is not valid for parent pages`,
+      });
+    }
+    
+    if (page.pageType === 'child' && ['ourEvents', 'celebrationsSeamless'].includes(section)) {
+      return res.status(400).json({
+        success: false,
+        message: `Section '${section}' is not valid for child pages`,
+      });
+    }
+    
+    // Handle descriptionText as a simple string field
+    if (section === 'descriptionText') {
+      // If sectionData is an object with a value property, extract it
+      if (typeof sectionData === 'object' && sectionData !== null && 'value' in sectionData) {
+        page[section] = sectionData.value;
+      } else if (typeof sectionData === 'string') {
+        page[section] = sectionData;
+      } else {
+        page[section] = sectionData;
+      }
+    } else {
+      page[section] = sectionData;
+    }
+    
+    const updatedPage = await page.save();
+    
+    res.status(200).json({
+      success: true,
+      message: `Section '${section}' updated successfully`,
+      data: updatedPage,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error removing event card', error: error.message });
+    console.error('Error updating section:', error);
+    res.status(400).json({
+      success: false,
+      message: 'Failed to update section',
+      error: error.message,
+    });
   }
 };
 
-export const addFeature = async (req, res) => {
+// Delete event page by slug
+export const deleteEventPageBySlug = async (req, res) => {
   try {
-    const { pageType } = req.params;
-    const { title, description, icon } = req.body;
-
-    if (!title || !icon) {
-      return res.status(400).json({ success: false, message: 'title and icon are required' });
+    const { slug } = req.params;
+    
+    const deletedPage = await EventPage.findOneAndDelete({ pageSlug: slug.toLowerCase() });
+    
+    if (!deletedPage) {
+      return res.status(404).json({
+        success: false,
+        message: `Event page with slug '${slug}' not found`,
+      });
     }
-
-    const eventPage = await EventPage.findOneAndUpdate(
-      { pageType },
-      { $push: { 'celebrationsSection.features': { title, description: description || '', icon } }, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    );
-
-    if (!eventPage) {
-      return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-    }
-
-    res.status(200).json({ success: true, message: 'Feature added successfully', data: eventPage });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Event page deleted successfully',
+      data: deletedPage,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error adding feature', error: error.message });
+    console.error('Error deleting event page:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete event page',
+      error: error.message,
+    });
   }
 };
 
-export const removeFeature = async (req, res) => {
+// Toggle active status
+export const toggleEventPageStatus = async (req, res) => {
   try {
-    const { pageType, featureIndex } = req.params;
-    const eventPage = await EventPage.findOne({ pageType });
-    if (!eventPage) return res.status(404).json({ success: false, message: `Event page not found for pageType: ${pageType}` });
-
-    const index = parseInt(featureIndex, 10);
-    if (Number.isNaN(index) || index < 0 || index >= eventPage.celebrationsSection.features.length) {
-      return res.status(400).json({ success: false, message: 'Invalid feature index' });
+    const { slug } = req.params;
+    
+    const page = await EventPage.findOne({ pageSlug: slug.toLowerCase() });
+    
+    if (!page) {
+      return res.status(404).json({
+        success: false,
+        message: `Event page with slug '${slug}' not found`,
+      });
     }
-
-    eventPage.celebrationsSection.features.splice(index, 1);
-    await eventPage.save();
-
-    res.status(200).json({ success: true, message: 'Feature removed successfully', data: eventPage });
+    
+    page.active = !page.active;
+    const updatedPage = await page.save();
+    
+    res.status(200).json({
+      success: true,
+      message: `Event page ${updatedPage.active ? 'activated' : 'deactivated'} successfully`,
+      data: updatedPage,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error removing feature', error: error.message });
-  }
-};
-
-/* -------------------------- NEW: INNER PAGES HELPERS -------------------------- */
-
-// PATCH (merge): /api/event-pages/:pageType/inner-hero
-export const patchInnerHero = async (req, res) => {
-  try {
-    const { pageType } = req.params;
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-    page.set('innerHero', { ...(page.innerHero?.toObject?.() || {}), ...req.body });
-    await page.save();
-    res.json({ success: true, data: page.innerHero });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
-// PATCH (merge): /api/event-pages/:pageType/overview
-export const patchOverview = async (req, res) => {
-  try {
-    const { pageType } = req.params;
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-    page.set('overview', { ...(page.overview?.toObject?.() || {}), ...req.body });
-    await page.save();
-    res.json({ success: true, data: page.overview });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
-// PATCH meta only: /api/event-pages/:pageType/celebration-types
-export const patchCelebrationTypesMeta = async (req, res) => {
-  try {
-    const { pageType } = req.params;
-    const { heading, description } = req.body || {};
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-    if (heading !== undefined) page.celebrationTypes.heading = heading;
-    if (description !== undefined) page.celebrationTypes.description = description;
-    await page.save();
-    res.json({ success: true, data: page.celebrationTypes });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
-// POST item: /api/event-pages/:pageType/celebration-types/items
-export const addCelebrationItem = async (req, res) => {
-  try {
-    const { pageType } = req.params;
-    const { image = '', title } = req.body || {};
-    if (!title) return res.status(400).json({ success: false, message: 'title required' });
-
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-
-    page.celebrationTypes.items.push({ image, title });
-    await page.save();
-    res.status(201).json({ success: true, data: page.celebrationTypes.items.at(-1) });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
-// PUT item: /api/event-pages/:pageType/celebration-types/items/:itemId
-export const updateCelebrationItem = async (req, res) => {
-  try {
-    const { pageType, itemId } = req.params;
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-
-    const item = page.celebrationTypes.items.id(itemId);
-    if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
-
-    item.set({ ...(item.toObject()), ...req.body });
-    await page.save();
-    res.json({ success: true, data: item });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
-// DELETE item: /api/event-pages/:pageType/celebration-types/items/:itemId
-export const deleteCelebrationItem = async (req, res) => {
-  try {
-    const { pageType, itemId } = req.params;
-    const page = await EventPage.findOne({ pageType });
-    if (!page) return res.status(404).json({ success: false, message: 'Event page not found' });
-
-    const item = page.celebrationTypes.items.id(itemId);
-    if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
-
-    item.deleteOne();
-    await page.save();
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
+    console.error('Error toggling page status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to toggle page status',
+      error: error.message,
+    });
   }
 };

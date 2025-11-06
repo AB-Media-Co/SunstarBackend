@@ -205,7 +205,7 @@ app.use('/api/event-pages', eventPageRoutes);
 app.use('/media', express.static(path.join(__dirname, 'client', 'public', 'media')));
 
 // ✅ API mount
-app.use('/api/media', mediaRoutes);
+// app.use('/api/media', mediaRoutes);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'build')));

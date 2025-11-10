@@ -46,12 +46,61 @@ const uploadMultiple = multer({
 ]);
 
 
-// Optimize image with reduced quality for faster processing
-const optimizeImage = async (buffer) => {
-  return sharp(buffer)
-    .resize(1280, 720, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 65, progressive: true })
-    .toBuffer();
+// Choose output format based on input and preference
+const determineOutputFormat = (mimetype, prefer = 'auto') => {
+  // prefer: 'auto' (keep alpha if present -> use webp if available), 'png', 'webp', 'jpeg'
+  if (prefer === 'png') return 'png';
+  if (prefer === 'webp') return 'webp';
+  if (prefer === 'jpeg') return 'jpg';
+
+  // auto: preserve alpha -> webp if alpha else jpeg
+  if (mimetype === 'image/png' || mimetype === 'image/webp' || mimetype === 'image/svg+xml') {
+    // png/webp may have alpha; prefer webp to save size while keeping alpha
+    return 'webp';
+  }
+  return 'jpg';
+};
+
+const optimizeImage = async (buffer, mimetype, options = {}) => {
+  // options: { maxWidth, maxHeight, preferFormat: 'auto'|'png'|'webp'|'jpeg', jpegQuality, webpQuality, pngCompression }
+  const {
+    maxWidth = 1280,
+    maxHeight = 720,
+    preferFormat = 'auto',
+    jpegQuality = 65,
+    webpQuality = 70,
+    pngCompression = 8,
+    flattenToWhite = false // if true, convert transparent to white for jpg
+  } = options;
+
+  const img = sharp(buffer).resize(maxWidth, maxHeight, { fit: 'inside', withoutEnlargement: true });
+
+  const meta = await img.metadata();
+  const hasAlpha = !!meta.hasAlpha;
+  const desired = determineOutputFormat(mimetype, preferFormat);
+
+  // If user explicitly wants jpeg and image had alpha and they want white bg:
+  if (desired === 'jpg' || desired === 'jpeg') {
+    if (hasAlpha && flattenToWhite) {
+      // Replace transparency with white background before jpeg conversion
+      return img.flatten({ background: { r: 255, g: 255, b: 255 } }).jpeg({ quality: jpegQuality, progressive: true }).toBuffer();
+    } else {
+      // If hasAlpha and flattenToWhite is false, alpha will be lost and may become black; so better to fallback to webp/png
+      if (hasAlpha) {
+        // fallback to webp to preserve alpha
+        return img.webp({ quality: webpQuality }).toBuffer();
+      }
+      return img.jpeg({ quality: jpegQuality, progressive: true }).toBuffer();
+    }
+  }
+
+  if (desired === 'png') {
+    // Keep alpha, good for transparency
+    return img.png({ compressionLevel: pngCompression }).toBuffer();
+  }
+
+  // default -> webp (good size + supports alpha)
+  return img.webp({ quality: webpQuality }).toBuffer();
 };
 
 // Universal image upload handler that works with different field names

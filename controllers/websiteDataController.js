@@ -515,6 +515,7 @@ export const replaceWhatMakesUsShineItems = async (req, res) => {
 // Update a single item by index (0,1,2) — keeps the "exactly 3" rule intact
 export const updateWhatMakesUsShineItem = async (req, res) => {
   try {
+    console.log(req.body)
     const idx = Number(req.params.index);
     const patch = req.body || {};
 

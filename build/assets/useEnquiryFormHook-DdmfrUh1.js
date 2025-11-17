@@ -1,0 +1,1 @@
+import{b as s,u as e}from"./query-vendor-B-W3jWpx.js";import{d as i,c as u}from"./index-Bl04lSVd.js";const a=async s=>(await u.post("/api/enquiries",s)).data,r=()=>{const u=s();return e({mutationFn:a,onSuccess:()=>{u.invalidateQueries({queryKey:["enquiries"]}),i.success("Enquiry submitted successfully")}})};export{r as u};

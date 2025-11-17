@@ -1,1 +1,0 @@
-import{c as a}from"./index-Bl04lSVd.js";const t=async()=>(await a.get("/api/dev-owners-stats")).data.data,s=async t=>(await a.patch("/api/dev-owners-stats",t)).data.data,e=async()=>(await a.post("/api/dev-owners-stats/reset",{})).data.data;export{t as g,e as r,s as u};

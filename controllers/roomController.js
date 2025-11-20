@@ -161,8 +161,26 @@ export const getSyncedRooms = async (req, res) => {
       }
     ).lean();
 
-    const byTypeId = new Map(existingRooms.map((doc) => [String(doc.RoomTypeID), doc]));
+    // const byTypeId = new Map(existingRooms.map((doc) => [String(doc.RoomTypeID), doc]));
+    const byTypeId = new Map();
 
+for (const doc of existingRooms) {
+  const key = String(doc.RoomTypeID);
+  const current = byTypeId.get(key);
+
+  const hasImg = Array.isArray(doc.RoomImage) && doc.RoomImage.length > 0;
+  const currentHasImg =
+    current && Array.isArray(current.RoomImage) && current.RoomImage.length > 0;
+
+  if (!current) {
+    // Pehla doc
+    byTypeId.set(key, doc);
+  } else if (hasImg && !currentHasImg) {
+    // Agar naye doc me image hai aur pehle wale me nahi, to naye ko use karo
+    byTypeId.set(key, doc);
+  }
+  // Agar dono me image hai ya dono me nahi hai → pehle wale ko hi rehne do
+}
     // Prepare bulk upserts
     const ops = [];
     const identifiers = []; // keep order to preserve response order exactly as before

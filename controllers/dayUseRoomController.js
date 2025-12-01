@@ -33,12 +33,14 @@ export const getDayUseRooms = async (req, res) => {
       if (!hotel.isDayUseRoom) continue;
 
       const roomTypes = roomTypeMap[hotel.hotelCode.toString()] || [];
-      const standardRoom = await Room.findOne({
+      const allRooms = await Room.find({
         HotelCode: hotel.hotelCode.toString(),
-        RoomName: { $in: roomTypes }   // ✅ match any room in list
+        RoomName: { $in: roomTypes }
       });
 
-      if (!standardRoom) continue;
+      // Prioritize room with images, then fallback to the first one
+      const standardRoom = allRooms.find(r => r.RoomImage && r.RoomImage.length > 0) || allRooms[0];
+
 
       const fullDayRate = Number((standardRoom.discountRate * 0.6).toFixed(2));
 

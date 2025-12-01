@@ -2,21 +2,21 @@
 import FAQ from '../models/faqModel.js';
 
 export const addMultipleFAQs = async (req, res) => {
-    try {
-      const faqs = req.body;
-  
-      // Ensure that each FAQ has the required fields
-      const isValid = faqs.every(faq => faq.page && faq.question && faq.answer);
-      if (!isValid) {
-        return res.status(400).json({ message: "Each FAQ must have a page, question, and answer" });
-      }
-  
-      const result = await FAQ.insertMany(faqs);
-      res.status(201).json({ message: "Multiple FAQs added successfully", result });
-    } catch (error) {
-      res.status(500).json({ message: "Error adding multiple FAQs: " + error.message });
+  try {
+    const faqs = req.body;
+
+    // Ensure that each FAQ has the required fields
+    const isValid = faqs.every(faq => faq.page && faq.question && faq.answer);
+    if (!isValid) {
+      return res.status(400).json({ message: "Each FAQ must have a page, question, and answer" });
     }
-  };
+
+    const result = await FAQ.insertMany(faqs);
+    res.status(201).json({ message: "Multiple FAQs added successfully", result });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding multiple FAQs: " + error.message });
+  }
+};
 
 // Add a new FAQ
 export const addFAQ = async (req, res) => {
@@ -79,7 +79,7 @@ export const getFAQsByPage = async (req, res) => {
     const faqs = await FAQ.find({ page });
 
     if (faqs.length === 0) {
-      return res.status(404).json({ message: 'No FAQs found for this page' });
+      return res.status(200).json([]);
     }
 
     res.status(200).json(faqs);

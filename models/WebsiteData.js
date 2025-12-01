@@ -129,7 +129,8 @@ const OfferingSectionSchema = new Schema({
       title: { type: String },
       description: { type: String },
       link: { type: String },
-      image: { type: String }
+      image: { type: String },
+      buttonText: { type: String }
     }
   ]
 });
@@ -290,7 +291,13 @@ const WebsiteDataSchema = new Schema(
     shineSection: ShineSectionSchema,
     heroSection: HeroSectionSchema,
     homePageDescription: HomePageDescriptionsSchema,
-    whatWeOffers: OfferingSectionSchema,
+    whatWeOffers: {
+      home: OfferingSectionSchema,
+      whySunstar: OfferingSectionSchema,
+      corporate: OfferingSectionSchema,
+      travelAgent: OfferingSectionSchema,
+      comeShineWithUs: OfferingSectionSchema
+    },
     WhySunstar: WhySunstarSchema,
     Testimonials: TestimonialSchema,
     CoorporateBooking: CoorporateBookingSchmea,

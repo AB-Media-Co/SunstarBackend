@@ -208,7 +208,7 @@ export const updateHomePageDescription = async (req, res) => {
 
 export const createOffering = async (req, res) => {
   try {
-    let { whatWeOffers } = req.body;
+    let { whatWeOffers, page } = req.body;
 
     if (
       !whatWeOffers ||
@@ -218,6 +218,14 @@ export const createOffering = async (req, res) => {
       return res.status(400).json({
         message: 'whatWeOffers must be an object containing an offers array.',
       });
+    }
+
+    // Default to 'home' if no page provided, for backward compatibility
+    const targetPage = page || 'home';
+    const validPages = ['home', 'whySunstar', 'corporate', 'travelAgent', 'comeShineWithUs'];
+
+    if (!validPages.includes(targetPage)) {
+      return res.status(400).json({ message: `Invalid page. Must be one of: ${validPages.join(', ')}` });
     }
 
     const seen = new Set();
@@ -232,7 +240,14 @@ export const createOffering = async (req, res) => {
       return res.status(404).json({ message: 'Website data not found.' });
     }
 
-    websiteData.whatWeOffers = whatWeOffers;
+    // Ensure whatWeOffers object exists
+    if (!websiteData.whatWeOffers) {
+      websiteData.whatWeOffers = {};
+    }
+
+    // Update the specific page
+    websiteData.whatWeOffers[targetPage] = whatWeOffers;
+
     const savedOffering = await websiteData.save();
     res.status(201).json(savedOffering);
   } catch (err) {
@@ -246,7 +261,7 @@ export const createOffering = async (req, res) => {
 
 export const updateValueSection = async (req, res) => {
   try {
-    const { heading, valueData ,heroSectionDescription} = req.body;
+    const { heading, valueData, heroSectionDescription } = req.body;
 
     if (!heading || !Array.isArray(valueData)) {
       return res.status(400).json({ error: 'Heading and valueData array are required.' });
@@ -361,7 +376,7 @@ export const addCoorporateBooking = async (req, res) => {
     if (!websiteData) {
       websiteData = new WebsiteData({ CoorporateBooking: newPayload });
     } else {
-      websiteData.CoorporateBooking = newPayload; 
+      websiteData.CoorporateBooking = newPayload;
     }
 
     await websiteData.save();
@@ -453,10 +468,10 @@ export const upsertWhatMakesUsShine = async (req, res) => {
     }));
 
     const websiteData = await getOrCreateWebsiteData();
-    websiteData.whatMakesUsShine = { 
-      heading: heading.trim(), 
-      description: description.trim(), 
-      items: processedItems 
+    websiteData.whatMakesUsShine = {
+      heading: heading.trim(),
+      description: description.trim(),
+      items: processedItems
     };
     await websiteData.save();
 

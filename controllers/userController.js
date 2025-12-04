@@ -171,27 +171,60 @@ export const sendOtp2 = async (req, res) => {
     const mailOptions = {
       from: 'Sunstar Hospitality <webmaster@sunstarhospitality.com>',
       to: email,
-      subject: 'Your One-Time Password (OTP)',
+      subject: 'Your One-Time Password (OTP) - Sunstar Hospitality',
       html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
-          <div style="background-color: #f5a623; padding: 20px; text-align: center;">
-            <h1 style="color: #fff; margin: 0;">Sunstar Hospitality</h1>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+          <!-- Header -->
+          <div style="background-color: #f5a623; padding: 30px 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 1px;">Sunstar Hospitality</h1>
           </div>
-          <div style="padding: 30px;">
-            <p style="font-size: 16px;">Hi ${firstName || 'User'},</p>
-            <p style="font-size: 16px;">Your One-Time Password (OTP) for logging in is:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <span style="display: inline-block; background-color: #f5a623; color: #fff; font-size: 36px; font-weight: bold; padding: 15px 30px; border-radius: 8px; letter-spacing: 5px;">${otp}</span>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <p style="font-size: 16px; color: #333333; margin-bottom: 25px;">Hi ${firstName || 'User'},</p>
+            
+            <p style="font-size: 16px; color: #333333; line-height: 1.5; margin-bottom: 30px;">
+              Use the One-Time Password (OTP) below to log in to your account. This code is valid for <strong>10 minutes</strong>.
+            </p>
+            
+            <!-- OTP Box -->
+            <div style="text-align: center; margin-bottom: 35px;">
+              <div style="display: inline-block; background-color: #fff8e1; border: 2px dashed #f5a623; color: #333333; font-size: 32px; font-weight: 700; padding: 15px 40px; border-radius: 8px; letter-spacing: 6px;">
+                ${otp}
+              </div>
             </div>
-            <p style="font-size: 14px; color: #555;">This OTP is valid for 10 minutes. Please do not share this code with anyone for security reasons.</p>
-            <p style="font-size: 14px; color: #555;">By logging in or signing up, you agree with our <a href="#" style="color: #f5a623;">Terms and Conditions</a> and <a href="#" style="color: #f5a623;">Privacy Policy</a>.</p>
-            <p style="margin-top: 40px; font-size: 16px;">Safe travels,<br><strong>Team Sunstar</strong></p>
+
+            <!-- Warning Box -->
+            <div style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; margin-bottom: 30px; border-radius: 4px;">
+              <p style="margin: 0; color: #856404; font-size: 14px;">
+                <strong>SECURITY WARNING:</strong> Do not share this OTP with anyone, including Sunstar Hospitality staff. We will never ask for your OTP over phone or email.
+              </p>
+            </div>
+
+            <p style="font-size: 14px; color: #666666; line-height: 1.5;">
+              By logging in, you agree to our 
+              <a href="https://sunstarhospitality.com/terms-conditions&cancellation" style="color: #f5a623; text-decoration: none; font-weight: 600;">Terms & Conditions</a> 
+              and 
+              <a href="https://sunstarhospitality.com/privacy-policies" style="color: #f5a623; text-decoration: none; font-weight: 600;">Privacy Policy</a>.
+            </p>
+
+            <p style="margin-top: 40px; font-size: 16px; color: #333333;">
+              Safe travels,<br>
+              <strong>Team Sunstar</strong>
+            </p>
           </div>
-          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 13px; color: #777;">
-            Need help? Call us at +91 99999 99999 or email at webmaster@sunstarhospitality.com
+
+          <!-- Footer -->
+          <div style="background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+            <p style="margin: 0 0 10px; font-size: 12px; color: #888888;">
+              &copy; ${new Date().getFullYear()} Sunstar Hospitality. All rights reserved.
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #888888;">
+              Need help? Contact us at <a href="mailto:webmaster@sunstarhospitality.com" style="color: #f5a623; text-decoration: none;">webmaster@sunstarhospitality.com</a>
+            </p>
           </div>
         </div>
-        `
+      `
     };
 
     await transporter.sendMail(mailOptions);

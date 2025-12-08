@@ -3,6 +3,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
+import { syncUserToSheet } from '../utils/sheetSync.js';
 
 dotenv.config();
 
@@ -142,6 +143,10 @@ export const sendOtp2 = async (req, res) => {
         }
         throw createError; // Re-throw if it's not a duplicate key error
       }
+
+      // Sync new user to Google Sheet
+      syncUserToSheet(user).catch(err => console.error('Sheet sync error:', err));
+
     } else {
       // User exists, just update OTP
       user.otp = otp;
@@ -165,6 +170,9 @@ export const sendOtp2 = async (req, res) => {
       if (loyalAgent !== undefined) user.loyalAgent = loyalAgent;
 
       await user.save();
+
+      // Sync updated user to Google Sheet
+      syncUserToSheet(user).catch(err => console.error('Sheet sync error:', err));
     }
 
     // ✅ Beautiful HTML Email

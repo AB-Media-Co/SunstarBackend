@@ -37,6 +37,13 @@ const minFromObjValues = (obj) => {
   return found ? m : 0;
 };
 
+const calculateDefaultRate = (discountRate) => {
+  if (!discountRate || isNaN(discountRate) || discountRate <= 0) return 0;
+  // Random markup between 30% (1.30) and 40% (1.40)
+  const markup = 1 + (Math.random() * (0.40 - 0.30) + 0.30);
+  return Math.round(discountRate * markup);
+};
+
 const processGroupedRoomData = (roomList) => {
   const grouped = Object.create(null);
 
@@ -269,6 +276,7 @@ export const getSyncedRooms = async (req, res) => {
         RoomName: room.Roomtype_Name,
         Availability: room.min_available_rooms,
         discountRate: room.min_exclusive_tax,
+        defaultRate: calculateDefaultRate(room.min_exclusive_tax),
         maxGuests: parseInt(room.Room_Max_adult) || 1,
         baseAdultOccupancy: parseInt(room.base_adult_occupancy) || 2,
         maxAdultOccupancy: parseInt(room.max_adult_occupancy) || 3,
@@ -433,7 +441,8 @@ export const createRoom = async (req, res) => {
       RoomDescription,
       Amenities,
       AboutRoom,
-      defaultRate: defaultRate !== undefined ? parseFloat(defaultRate) : undefined,
+      AboutRoom,
+      defaultRate: computedDiscountRate ? calculateDefaultRate(computedDiscountRate) : (defaultRate !== undefined ? parseFloat(defaultRate) : undefined),
       discountRate: computedDiscountRate,
       Availability: parsedAvailability,
       FromDate: finalFromDate,
@@ -472,8 +481,13 @@ export const updateRoom = async (req, res) => {
     }
 
     const updateData = { ...req.body };
-    if (updateData.defaultRate !== undefined) updateData.defaultRate = parseFloat(updateData.defaultRate);
-    if (updateData.discountRate !== undefined) updateData.discountRate = parseFloat(updateData.discountRate);
+    if (updateData.discountRate !== undefined) {
+      updateData.discountRate = parseFloat(updateData.discountRate);
+      updateData.defaultRate = calculateDefaultRate(updateData.discountRate);
+    } else if (updateData.defaultRate !== undefined) {
+      // Only allow manual override if discountRate is NOT being updated (though frontend disables this)
+      updateData.defaultRate = parseFloat(updateData.defaultRate);
+    }
     if (updateData.Availability !== undefined) updateData.Availability = parseInt(updateData.Availability);
 
     const updatedRoom = await Room.findOneAndUpdate(
@@ -570,8 +584,8 @@ export const getMonthlyRoomRates = async (req, res) => {
       offset += chunkNights;
     }
 
-    // Fetch all chunks in parallel (max 3 concurrent)
-    const CONCURRENCY = 3;
+    // Fetch all chunks in parallel (max 6 concurrent)
+    const CONCURRENCY = 6;
     const allApiData = [];
 
     for (let i = 0; i < chunks.length; i += CONCURRENCY) {
@@ -602,24 +616,39 @@ export const getMonthlyRoomRates = async (req, res) => {
       results.forEach(data => allApiData.push(...data));
     }
 
-    // Merge all API data into calendar
+    // Merge all API data into calendar - Optimized loop
+    const dates = Object.keys(calendar);
+
     for (const room of allApiData) {
-      const availObj = (typeof room?.available_rooms === "object" && room.available_rooms) || {};
-      const priceObj = (typeof room?.room_rates_info?.exclusive_tax === "object" &&
-        room.room_rates_info.exclusive_tax) || {};
+      if (!room) continue;
 
-      for (const date of Object.keys(availObj)) {
-        if (!calendar[date]) continue;
+      const availObj = room.available_rooms || {};
+      const ratesInfo = room.room_rates_info || {};
+      const priceObj = ratesInfo.exclusive_tax || {};
 
-        const available = Number(availObj[date]) || 0;
-        const price = Number(priceObj[date]) || 0;
+      // Only iterate dates that exists in both calendar and response
+      for (const date of dates) {
+        const available = availObj[date];
+        if (available === undefined) continue; // Skip if no data for this date
 
-        if (available > 0) {
-          calendar[date].soldOut = false;
-          calendar[date].available = Math.max(calendar[date].available, available);
+        const numAvailable = Number(available) || 0;
 
-          if (price > 0 && (calendar[date].price === null || price < calendar[date].price)) {
-            calendar[date].price = price;
+        if (numAvailable > 0) {
+          const calDate = calendar[date];
+          calDate.soldOut = false;
+          // Math.max is slower than simple if in tight loops
+          if (numAvailable > calDate.available) {
+            calDate.available = numAvailable;
+          }
+
+          const price = priceObj[date];
+          if (price !== undefined) {
+            const numPrice = Number(price) || 0;
+            if (numPrice > 0) {
+              if (calDate.price === null || numPrice < calDate.price) {
+                calDate.price = numPrice;
+              }
+            }
           }
         }
       }
